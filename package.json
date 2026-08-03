@@ -1,0 +1,23 @@
+{
+  "name": "ap-emp-ai",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Telugu-first portal, RAG chatbot and calculator suite for AP government employees",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm --filter @ap-emp-ai/web dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm --filter \"./packages/*\" build && pnpm -r typecheck",
+    "clean": "pnpm -r exec rm -rf dist .next .turbo"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.10"
+  }
+}

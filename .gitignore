@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.next/
+out/
+build/
+coverage/
+
+# secrets — CLAUDE.md hard rule 7
+.env
+.env.*
+!.env.example
+
+# supabase local stack
+supabase/.branches/
+supabase/.temp/
+
+# scraper working files
+.downloads/
+*.log
+
+.DS_Store
+*.tsbuildinfo
+.vercel
