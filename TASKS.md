@@ -4,7 +4,7 @@
 - [x] pnpm monorepo: apps/web (Next.js 15), packages/calc, packages/ingest, packages/rag, supabase/
 - [x] Supabase local + migration 001 (schema from PLAN.md Part 3), pgvector + tsvector indexes
 - [x] Env plumbing (.env.example), CI: GitHub Action running lint+test+build
-- [ ] Base layout: Telugu/English toggle, nav, PWA manifest, mobile-first
+- [x] Base layout: Telugu/English toggle, nav, PWA manifest, mobile-first
 
 ## Phase 1 — Ingestion core
 - [ ] Playwright scraper: goir.ap.gov.in — list+download last 30 days GOs → ingest_queue (politeness rules)

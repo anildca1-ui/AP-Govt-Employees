@@ -23,3 +23,8 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - .env.example covering all six phases (Supabase, scraper politeness + contact email, embeddings pinned to 1024-d, LLM, Telegram, WhatsApp); verified .env stays ignored while .env.example is trackable.
 - ESLint 9 flat config set up from scratch (none existed), pinned to the Next 15 plugin; `pnpm lint` clean and confirmed to actually catch errors. CI runs lint·test·build plus a second job applying migrations and the schema smoke test against pgvector/pgvector:pg17.
 - Both CI jobs were run locally end-to-end before committing. Next: Phase 0 task 4 — base layout, Telugu/English toggle, nav, PWA manifest.
+
+## 2026-08-03 — Phase 0.4 base layout (PHASE 0 COMPLETE)
+- Path-based locales (/te, /en) via middleware rather than a cookie-on-one-URL, so Telugu and English have separate indexable URLs before Phase 5 adds routes; all strings in te.json/en.json with a test asserting key parity, no empties, Telugu script in te.json, and the verbatim bilingual disclaimer.
+- Sticky header + scrollable nav, footer carrying the "not an official website" and AI disclaimer lines on every page, PWA manifest with generated 192/512/maskable icons, self-hosted Noto Sans Telugu (verified the u+0c00-0c7f subset is actually served).
+- Verified in a real browser: toggle from /te/calculators lands on /en/calculators, cookie remembered, zero horizontal overflow at 390px. Phase 0 complete — next is Phase 1 task 1, the goir.ap.gov.in scraper.

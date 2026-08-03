@@ -18,9 +18,14 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
 
-  // Workspace packages and root tooling run on Node.
+  // Workspace packages, build scripts and root tooling run on Node.
   {
-    files: ["packages/**/*.ts", "*.mjs", "*.mts", "*.ts"],
+    files: [
+      "packages/**/*.ts",
+      "apps/*/scripts/**/*.{mjs,mts,ts}",
+      "apps/*/*.{mjs,mts,ts}",
+      "*.{mjs,mts,ts}",
+    ],
     languageOptions: {
       globals: globals.node,
     },

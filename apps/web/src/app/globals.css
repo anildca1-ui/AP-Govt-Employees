@@ -1,13 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  /* Telugu-first type stack. Phase 0 task 4 replaces this with a self-hosted
-     Noto Sans Telugu via next/font so the UI does not depend on the device
-     having a Telugu face installed. */
+  /* Telugu first: the Telugu face leads, Latin follows, so mixed strings like
+     "G.O.Ms.No.51 లో ఏమి ఉంది?" keep an even colour across both scripts.
+     Both are self-hosted by next/font — see the [locale] layout. */
   --font-sans:
-    "Noto Sans Telugu", "Gautami", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    var(--font-telugu), var(--font-latin), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
 }
 
 html {
   font-family: var(--font-sans);
+  /* Telugu has tall ascenders and deep descenders; the default line height
+     clips conjuncts at small sizes. */
+  line-height: 1.65;
 }

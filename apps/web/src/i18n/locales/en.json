@@ -1,0 +1,45 @@
+{
+  "site": {
+    "name": "AP Employees Portal",
+    "shortName": "AP Employees",
+    "tagline": "GOs, calculators and AI help — in one place",
+    "description": "GO library, salary and pension calculators, and a Telugu AI chat for Andhra Pradesh government employees."
+  },
+  "nav": {
+    "home": "Home",
+    "gos": "GOs",
+    "chat": "AI Chat",
+    "calculators": "Calculators",
+    "news": "News",
+    "tests": "Departmental Tests",
+    "links": "Quick Links",
+    "openMenu": "Open menu",
+    "primary": "Primary"
+  },
+  "lang": {
+    "label": "Language",
+    "switchTo": "తెలుగుకి మారండి"
+  },
+  "home": {
+    "heroTitle": "One portal for AP government employees",
+    "heroSubtitle": "Every answer grounded in a GO. Every calculation from the official orders.",
+    "wedgeTitle": "Coming first",
+    "cards": {
+      "gosTitle": "GO search",
+      "gosBody": "Search by GO number, department or date. See which GO superseded which.",
+      "chatTitle": "AI chat in Telugu",
+      "chatBody": "Ask your question — get an answer with the GO number, date and PDF link.",
+      "daTitle": "DA arrears calculator",
+      "daBody": "Enter your basic pay and the period — get a month-wise arrears table."
+    }
+  },
+  "common": {
+    "comingSoon": "Coming soon"
+  },
+  "footer": {
+    "notOfficial": "This is not an official Government of Andhra Pradesh website.",
+    "disclaimer": "ఇది AI సమాచారం మాత్రమే — అధికారిక GO తో సరిచూసుకోండి / AI-generated information only — verify with the original GO before acting.",
+    "privacy": "Privacy",
+    "disclaimerLink": "Disclaimer"
+  }
+}
