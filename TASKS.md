@@ -3,7 +3,7 @@
 ## Phase 0 — Scaffold
 - [x] pnpm monorepo: apps/web (Next.js 15), packages/calc, packages/ingest, packages/rag, supabase/
 - [x] Supabase local + migration 001 (schema from PLAN.md Part 3), pgvector + tsvector indexes
-- [ ] Env plumbing (.env.example), CI: GitHub Action running lint+test+build
+- [x] Env plumbing (.env.example), CI: GitHub Action running lint+test+build
 - [ ] Base layout: Telugu/English toggle, nav, PWA manifest, mobile-first
 
 ## Phase 1 — Ingestion core

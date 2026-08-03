@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  verify:
+    name: lint · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Reads the pnpm version from package.json "packageManager".
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  schema:
+    name: migration · schema smoke test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        # Matches the Postgres major version of the Supabase local stack, with
+        # pgvector preinstalled.
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create the roles Supabase provides
+        run: |
+          psql -v ON_ERROR_STOP=1 -c "create role anon nologin;" \
+                                  -c "create role authenticated nologin;" \
+                                  -c "create role service_role nologin bypassrls;"
+
+      - name: Apply migrations
+        run: |
+          for f in supabase/migrations/*.sql; do
+            echo "── $f"
+            psql -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
+      # Supabase grants these through default privileges on the public schema;
+      # a bare Postgres image does not, and without them the RLS assertions
+      # would fail on a permission error instead of testing the policies.
+      - name: Grant anon/authenticated the privileges Supabase grants
+        run: |
+          psql -v ON_ERROR_STOP=1 \
+            -c "grant usage on schema public to anon, authenticated;" \
+            -c "grant all on all tables in schema public to anon, authenticated;"
+
+      - name: Schema smoke test
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/001_schema_smoke.sql

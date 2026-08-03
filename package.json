@@ -9,6 +9,8 @@
   },
   "scripts": {
     "build": "pnpm -r build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "dev": "pnpm --filter @ap-emp-ai/web dev",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -20,9 +22,15 @@
     "db:test": "psql \"postgresql://postgres:postgres@127.0.0.1:54322/postgres\" -v ON_ERROR_STOP=1 -f supabase/tests/001_schema_smoke.sql"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@next/eslint-plugin-next": "15.5.22",
     "@types/node": "^22.10.2",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^15.15.0",
     "supabase": "^2.111.0",
     "typescript": "^5.7.2",
+    "typescript-eslint": "^8",
     "vitest": "^4.1.10"
   }
 }
