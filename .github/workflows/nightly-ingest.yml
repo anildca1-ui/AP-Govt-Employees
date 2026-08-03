@@ -1,0 +1,70 @@
+name: Nightly ingest
+
+# 21:30 UTC = 03:00 IST — the overnight window CLAUDE.md rule 3 asks for, when
+# the government sites are quiet.
+on:
+  schedule:
+    - cron: "30 21 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    name: scrape goir · e-Gazette · Finance · discovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      SCRAPER_CONTACT_EMAIL: ${{ secrets.SCRAPER_CONTACT_EMAIL }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      # Until the repository has secrets, this workflow should be green-and-
+      # skipped rather than red every night: a failing scheduled job that nobody
+      # can fix yet is noise that trains people to ignore the notification.
+      - id: guard
+        name: Check the run is configured
+        run: |
+          if [ -z "$SCRAPER_CONTACT_EMAIL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ] || [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
+            echo "::notice::Skipping: set the SCRAPER_CONTACT_EMAIL, NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY repository secrets to enable nightly ingestion."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.guard.outputs.configured == 'true'
+        uses: actions/checkout@v4
+
+      - if: steps.guard.outputs.configured == 'true'
+        uses: pnpm/action-setup@v4
+
+      - if: steps.guard.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - if: steps.guard.outputs.configured == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - if: steps.guard.outputs.configured == 'true'
+        name: Install Chromium
+        run: pnpm --filter @ap-emp-ai/ingest exec playwright install --with-deps chromium
+
+      # Each source is its own step, and later steps run even after an earlier
+      # failure: one site being down overnight must not cost us the others.
+      # Every step still reports its own status, so a persistent failure is
+      # visible rather than swallowed.
+      - if: steps.guard.outputs.configured == 'true'
+        name: goir.ap.gov.in
+        run: pnpm --filter @ap-emp-ai/ingest scrape:goir 30
+
+      - if: steps.guard.outputs.configured == 'true' && !cancelled()
+        name: e-Gazette
+        run: pnpm --filter @ap-emp-ai/ingest scrape:gazette 30
+
+      - if: steps.guard.outputs.configured == 'true' && !cancelled()
+        name: Finance circulars
+        run: pnpm --filter @ap-emp-ai/ingest scrape:finance 30

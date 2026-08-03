@@ -43,3 +43,8 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - /admin queue list + detail with editable metadata, approve/reject, and a supersession linker that writes both sides (superseded_by on the old GO, supersedes[] on the new) since the answer path walks the former and the library renders the latter.
 - Interim ADMIN_TOKEN cookie gate (timing-safe compare, Phase 6 replaces it): pages are gated as well as actions, so a guessed URL renders nothing. Verified at runtime — wrong token never reaches the DB, correct token passes auth and fails only on absent Supabase env; pages serve no-store, nothing prerendered.
 - Approval maps queue meta → documents with schema-invalid values nulled rather than erroring, and treats a sha256 conflict as "duplicate" instead of a failure. Next: Phase 1 task 6 — nightly cron + e-Gazette and Finance scrapers.
+
+## 2026-08-03 — Phase 1.6 nightly cron + scrapers B and C
+- scrape-common/index-scraper.ts generalises the goir crawl so e-Gazette and Finance inherit identical politeness instead of becoming three copies that drift; goir/scrape.ts left untouched (committed and verified — rewriting a working crawler for no behavioural gain is the wrong risk).
+- Nightly GitHub Action at 21:30 UTC (03:00 IST), each source its own step so one site being down does not cost the others, and a guard step that skips green until the repo has secrets rather than failing red every night.
+- 5 politeness tests assert the aborts that happen before a browser launches: unreadable robots.txt, Disallow, a rule aimed at our product token, and a placeholder contact email. 220 tests green. Next: Phase 1 task 7 — sitemap/RSS diff watcher.
