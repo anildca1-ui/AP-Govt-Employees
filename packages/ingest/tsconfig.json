@@ -3,6 +3,9 @@
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    // DOM is needed because the $$eval callback in goir/scrape.ts is serialised
+    // and executed inside the browser page, not in Node.
+    "lib": ["ES2022", "DOM"],
     "types": ["node"],
     "rootDir": "./src",
     "outDir": "./dist"

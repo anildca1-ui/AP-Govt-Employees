@@ -159,6 +159,23 @@ begin
   end if;
 end $$;
 
+-- --- ingest_queue dedupe (migration 002) -------------------------------------
+do $$
+begin
+  insert into ingest_queue (source, raw_url, sha256) values ('goir', 'https://a.pdf', 'sha-queued');
+
+  begin
+    -- Same bytes reaching us again, from a different source and URL.
+    insert into ingest_queue (source, raw_url, sha256) values ('whatsapp', 'https://b.pdf', 'sha-queued');
+    raise exception 'the same PDF was queued twice — rule 3 dedupe is not enforced';
+  exception when unique_violation then null;
+  end;
+
+  -- Rows still awaiting download have no hash yet, and several may coexist.
+  insert into ingest_queue (source, raw_url) values ('goir', 'https://c.pdf');
+  insert into ingest_queue (source, raw_url) values ('goir', 'https://d.pdf');
+end $$;
+
 -- --- RLS: the library is public, the queue and the users are not --------------
 insert into rates (kind, effective_from, payload) values ('DA', date '2025-01-01', '{"percent": 3.64}');
 insert into chat_logs (question, lang) values ('DA ఎంత?', 'te');

@@ -12,13 +12,22 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify:selectors": "pnpm build && node --env-file-if-exists=../../.env dist/cli/verify-selectors.js",
+    "scrape:goir": "pnpm build && node --env-file-if-exists=../../.env dist/cli/scrape-goir.js"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.0",
+    "playwright": "^1.62.1",
+    "robots-parser": "^3.0.1"
   }
 }

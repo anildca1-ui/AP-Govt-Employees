@@ -7,7 +7,10 @@
 - [x] Base layout: Telugu/English toggle, nav, PWA manifest, mobile-first
 
 ## Phase 1 — Ingestion core
-- [ ] Playwright scraper: goir.ap.gov.in — list+download last 30 days GOs → ingest_queue (politeness rules)
+- [x] Playwright scraper: goir.ap.gov.in — list+download last 30 days GOs → ingest_queue (politeness rules)
+      ⚠️ selectors in packages/ingest/src/goir/selectors.ts are unverified against the live site
+      (no network access from the dev sandbox) — run `pnpm --filter @ap-emp-ai/ingest verify:selectors`
+      once, with SCRAPER_CONTACT_EMAIL set, before the first real crawl
 - [ ] PDF pipeline: pdf-parse text extraction; scanned-detection; OCR fallback interface (stub Surya; vision-LLM fallback via Gemini)
 - [ ] Metadata extractor: vision-LLM prompt → {go_number, go_type, dept, date, subject, subject_te, supersedes[]} with confidence; low-confidence → flag for review
 - [ ] Dedupe by sha256; chunker (by section, header metadata attached); embedder; writer to chunks
