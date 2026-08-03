@@ -16,7 +16,7 @@
 - [x] Dedupe by sha256; chunker (by section, header metadata attached); embedder; writer to chunks
 - [x] Admin review queue UI (/admin): approve/edit/reject, supersession linker
 - [x] Nightly cron (Vercel cron or GH Action) for scraper A; scraper B (e-Gazette) + C (Finance circulars)
-- [ ] Sitemap/RSS diff watcher for the 6 reference sites → discovery list → fetch official PDF
+- [x] Sitemap/RSS diff watcher for the 6 reference sites → discovery list → fetch official PDF
 
 ## Phase 2 — RAG chat
 - [ ] Hybrid search fn: GO-number regex short-circuit → else 0.6 vector + 0.4 tsvector, top-12, rerank to 5

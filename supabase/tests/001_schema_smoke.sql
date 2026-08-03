@@ -176,6 +176,22 @@ begin
   insert into ingest_queue (source, raw_url) values ('goir', 'https://d.pdf');
 end $$;
 
+-- --- watch_seen: discovery bookkeeping (migration 003) -----------------------
+do $$
+begin
+  insert into watch_seen (site, url) values ('apemp', 'https://apemp.in/go-51');
+
+  begin
+    -- A second nightly run seeing the same sitemap entry must be a no-op.
+    insert into watch_seen (site, url) values ('apemp', 'https://apemp.in/go-51');
+    raise exception 'the same (site, url) was recorded twice — the diff would re-queue nightly';
+  exception when unique_violation then null;
+  end;
+
+  -- The same URL path on a different site is a different discovery.
+  insert into watch_seen (site, url) values ('gunturbadi', 'https://apemp.in/go-51');
+end $$;
+
 -- --- RLS: the library is public, the queue and the users are not --------------
 insert into rates (kind, effective_from, payload) values ('DA', date '2025-01-01', '{"percent": 3.64}');
 insert into chat_logs (question, lang) values ('DA ఎంత?', 'te');
@@ -206,6 +222,9 @@ begin
   end if;
   if exists (select 1 from users) then
     raise exception 'anon can read users — personal data is exposed';
+  end if;
+  if exists (select 1 from watch_seen) then
+    raise exception 'anon can read watch_seen — crawler bookkeeping is exposed';
   end if;
 end $$;
 

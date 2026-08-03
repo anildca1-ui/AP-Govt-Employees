@@ -48,3 +48,8 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - scrape-common/index-scraper.ts generalises the goir crawl so e-Gazette and Finance inherit identical politeness instead of becoming three copies that drift; goir/scrape.ts left untouched (committed and verified — rewriting a working crawler for no behavioural gain is the wrong risk).
 - Nightly GitHub Action at 21:30 UTC (03:00 IST), each source its own step so one site being down does not cost the others, and a guard step that skips green until the repo has secrets rather than failing red every night.
 - 5 politeness tests assert the aborts that happen before a browser launches: unreadable robots.txt, Disallow, a rule aimed at our product token, and a placeholder contact email. 220 tests green. Next: Phase 1 task 7 — sitemap/RSS diff watcher.
+
+## 2026-08-03 — Phase 1.7 discovery watcher (PHASE 1 COMPLETE)
+- Diffs the six reference sites' sitemaps/feeds against watch_seen (migration 003, verified on Postgres) and queues newly-seen URLs as leads — explicitly not documents: no sha256, and a meta note telling the reviewer to fetch the official PDF from goir/e-Gazette rather than ingest the reference page.
+- Forgiving by design: malformed feed → [], one unreachable site → that site skipped and the other five continue, per-site rate limiter honouring each site's Crawl-delay. The CLI only fails the cron when every site is unreachable, since that means a systemic fault rather than six coincidences.
+- 239 tests green. Phase 1 complete. ⚠️ Three selector files remain unverified against their live sites (sandbox cannot reach them) and the Part 5.1 review checkpoint — 20 documents checked by hand — is still owed before scaling ingestion.

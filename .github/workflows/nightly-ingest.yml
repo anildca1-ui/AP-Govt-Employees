@@ -68,3 +68,7 @@ jobs:
       - if: steps.guard.outputs.configured == 'true' && !cancelled()
         name: Finance circulars
         run: pnpm --filter @ap-emp-ai/ingest scrape:finance 30
+
+      - if: steps.guard.outputs.configured == 'true' && !cancelled()
+        name: Reference-site discovery diff
+        run: pnpm --filter @ap-emp-ai/ingest watch:diff
