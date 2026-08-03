@@ -38,3 +38,8 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - unpdf-based text extraction (pdf-parse crashes on ESM import) with ratio-based scanned detection and two OCR providers behind one interface: Surya stub + Gemini vision (native PDF input, no rasterisation).
 - Vision extractor always attaches the PDF even when text extraction worked — letterheads, seals and "in supersession of" marginalia are exactly the fields being read; parsing never throws so a malformed reply still reaches the review queue.
 - Section chunker with per-chunk provenance headers (a retrieval hit is read alone and must still cite its GO), 1024-d-pinned embedders, idempotent chunk writer. Fixed a real sparse-array bug in the OpenAI provider: map() skips holes, so the missing-embedding guard never ran. 215 tests green.
+
+## 2026-08-03 — Phase 1.5 admin review queue
+- /admin queue list + detail with editable metadata, approve/reject, and a supersession linker that writes both sides (superseded_by on the old GO, supersedes[] on the new) since the answer path walks the former and the library renders the latter.
+- Interim ADMIN_TOKEN cookie gate (timing-safe compare, Phase 6 replaces it): pages are gated as well as actions, so a guessed URL renders nothing. Verified at runtime — wrong token never reaches the DB, correct token passes auth and fails only on absent Supabase env; pages serve no-store, nothing prerendered.
+- Approval maps queue meta → documents with schema-invalid values nulled rather than erroring, and treats a sha256 conflict as "duplicate" instead of a failure. Next: Phase 1 task 6 — nightly cron + e-Gazette and Finance scrapers.
