@@ -118,3 +118,8 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - Phases 0–6: 27 tasks, all checked. 530 tests, lint/typecheck/test/build green via scripts/gate.sh.
 - Owed to the user before launch (PLAN.md Part 5): verify 3 scraper selector files against live sites; hand-check 20 extracted documents; verify every rates row against its GO PDF (all seeded rows are flagged _unverified and warn in the UI until then); run the golden-set eval with real keys; set SCRAPER_CONTACT_EMAIL, Supabase keys, GEMINI_API_KEY, ADMIN_TOKEN and bot secrets; deploy, then measure Lighthouse and wire error tracking.
 ALL-DONE
+
+## 2026-08-04 — CI green: schema smoke test tracks the whole migration chain
+- CI caught what the local gate could not: migration 006 made users.id a foreign key to auth.users, and the smoke test still inserted a profile with a generated id, so it failed on a schema that was itself correct. Fixed by creating the account first; the next assertion would have failed too, since it read `from rates limit 1` and migration 005 seeds sixteen rows ahead of the test's own.
+- Added the coverage whose absence caused the drift — migration 006's guarantees are now asserted: the FK, cascade-on-account-delete, chat_logs SET NULL, append-only consent, and per-account read isolation. Each of the twelve assertions was mutation-tested by breaking the policy or constraint it guards and confirming the test fails.
+- Shim moved to supabase/tests/000_supabase_shim.sql, shared by CI and the new scripts/schema-check.sh so a schema failure reproduces locally; auth.uid() now accepts both JWT claim GUCs like Supabase's own, since a shim easier to satisfy than production makes CI a weaker gate than it looks. 530 tests green.

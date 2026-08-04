@@ -1,21 +1,36 @@
--- Smoke test for migration 001. Every check raises an exception on failure, so
--- a clean run means the schema behaves as the migration intends.
+-- Smoke test for the schema. Every check raises an exception on failure, so a
+-- clean run means the schema behaves as the migrations intend.
 --
 --   psql -v ON_ERROR_STOP=1 -d <db> -f supabase/tests/001_schema_smoke.sql
 --
 -- Or, against the local stack: `pnpm db:start && pnpm db:test`.
+-- Or, end to end from nothing: `scripts/schema-check.sh`.
 --
--- Run it against a database that has had 20260803000001_initial_schema.sql
--- applied. It rolls back, so it leaves no rows behind.
--- On a bare Postgres cluster you also need the roles Supabase provides:
---   create role anon nologin; create role authenticated nologin;
---   create role service_role nologin bypassrls;
---   grant usage on schema public to anon, authenticated;
---   grant all on all tables in schema public to anon, authenticated;
+-- Run it against a database with EVERY migration in supabase/migrations applied,
+-- not just 001 — the assertions below cover the whole chain, and a rate seeded
+-- by 005 or a foreign key added by 006 changes what the earlier tables accept.
+-- It rolls back, so it leaves no rows behind.
+--
+-- On a bare Postgres cluster, apply supabase/tests/000_supabase_shim.sql first
+-- for the roles, the auth schema and the grants Supabase would provide.
 
 \set ON_ERROR_STOP on
 
+-- Fixed ids rather than gen_random_uuid(): users.id is a foreign key to
+-- auth.users, so the profile and the account it belongs to have to agree, and
+-- auth.uid() has to be settable to the same value further down.
+\set user_a '11111111-1111-4111-8111-111111111111'
+\set user_b '22222222-2222-4222-8222-222222222222'
+\set no_account 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'
+
 begin;
+
+-- psql substitutes :'user_a' in plain SQL but not inside a dollar-quoted
+-- PL/pgSQL body, so the same ids are also carried as settings for the do blocks
+-- to read. Both come from the \set above; neither is a second copy to update.
+set local smoke.user_a = :'user_a';
+set local smoke.user_b = :'user_b';
+set local smoke.no_account = :'no_account';
 
 -- --- structure ---------------------------------------------------------------
 do $$
@@ -193,10 +208,19 @@ begin
 end $$;
 
 -- --- RLS: the library is public, the queue and the users are not --------------
-insert into rates (kind, effective_from, payload) values ('DA', date '2025-01-01', '{"percent": 3.64}');
+-- Migration 005 seeds sixteen rates, so this row is tagged to stay findable
+-- among them. Asserting on `from rates limit 1` would read whichever row the
+-- heap happened to return.
+insert into rates (kind, effective_from, payload)
+values ('DA', date '2025-01-01', '{"percent": 3.64, "_smoke_test": true}');
 insert into chat_logs (question, lang) values ('DA ఎంత?', 'te');
 insert into ingest_queue (source, raw_url) values ('goir', 'https://goir.ap.gov.in/x.pdf');
-insert into users (phone, basic_pay, cps_or_ops) values ('+910000000000', 52590, 'CPS');
+
+-- A profile needs an account: migration 006 made users.id a foreign key to
+-- auth.users(id).
+insert into auth.users (id) values (:'user_a');
+insert into users (id, phone, basic_pay, cps_or_ops)
+values (:'user_a', '+910000000000', 52590, 'CPS');
 
 set local role anon;
 
@@ -271,8 +295,128 @@ begin
   if not exists (select 1 from documents where sha256 = 'sha-approved') then
     raise exception 'an approved document was deleted by anon after all';
   end if;
-  if (select payload ->> 'percent' from rates limit 1) <> '3.64' then
+  if (select payload ->> 'percent' from rates where payload ->> '_smoke_test' = 'true')
+     is distinct from '3.64' then
     raise exception 'a rate row was modified by anon after all';
+  end if;
+end $$;
+
+-- --- migration 006: accounts, consent, and delete-my-data ---------------------
+-- CLAUDE.md rule 7 is a DPDP obligation, and the database is where it is either
+-- kept or quietly broken. These assertions are the enforceable half of it.
+
+-- A profile must belong to a real account. Without the foreign key, a stale or
+-- forged id creates a row no account owns — and delete-my-data never reaches it,
+-- because there is no account to delete.
+do $$
+begin
+  begin
+    insert into users (id, phone)
+    values (current_setting('smoke.no_account')::uuid, '+919999999999');
+    raise exception 'a profile was created for an id with no auth account';
+  exception when foreign_key_violation then null;
+  end;
+end $$;
+
+-- A second account, so "your own row" is a claim with something to exclude.
+insert into auth.users (id) values (:'user_b');
+insert into users (id, phone, basic_pay, cps_or_ops)
+values (:'user_b', '+910000000001', 41000, 'OPS');
+
+insert into consent_events (user_id, purpose, granted, policy_text, policy_version)
+values (:'user_a', 'profile_storage', true, 'Stores your basic pay to prefill calculators.', '2026-08-01');
+insert into consent_events (user_id, purpose, granted, policy_text, policy_version)
+values (:'user_b', 'chat_logging', true, 'Keeps your questions to improve answers.', '2026-08-01');
+
+insert into chat_logs (question, lang, user_id, feedback)
+values ('నా DA ఎంత?', 'te', :'user_a', -1);
+insert into chat_logs (question, lang, user_id)
+values ('HRA slab for Vijayawada?', 'en', :'user_b');
+
+set local role authenticated;
+set local "request.jwt.claim.sub" = :'user_a';
+
+do $$
+declare touched integer;
+begin
+  if auth.uid() is null then
+    raise exception 'auth.uid() is null — the rest of this section would assert nothing';
+  end if;
+
+  -- Read isolation. One employee's basic pay must not be visible to another.
+  if not exists (select 1 from users where id = auth.uid()) then
+    raise exception 'a signed-in person cannot read their own profile';
+  end if;
+  if exists (select 1 from users where id <> auth.uid()) then
+    raise exception 'a signed-in person can read another employee''s profile';
+  end if;
+  if exists (select 1 from consent_events where user_id <> auth.uid()) then
+    raise exception 'a signed-in person can read another person''s consent history';
+  end if;
+  if exists (select 1 from chat_logs where user_id is distinct from auth.uid()) then
+    raise exception 'a signed-in person can read another person''s chat history';
+  end if;
+
+  -- Append-only consent. A mutable record cannot answer "did they consent on the
+  -- day we processed their data?", which is the question that actually gets asked.
+  update consent_events set granted = false where user_id = auth.uid();
+  get diagnostics touched = row_count;
+  if touched <> 0 then
+    raise exception 'a consent event was rewritten — the log is not append-only';
+  end if;
+
+  delete from consent_events where user_id = auth.uid();
+  get diagnostics touched = row_count;
+  if touched <> 0 then
+    raise exception 'a consent event was deleted — the log is not append-only';
+  end if;
+
+  -- Recording consent is the one write that must work.
+  insert into consent_events (user_id, purpose, granted)
+  values (auth.uid(), 'chat_logging', true);
+
+  begin
+    insert into consent_events (user_id, purpose, granted)
+    values (current_setting('smoke.user_b')::uuid, 'chat_logging', true);
+    raise exception 'consent was recorded on another person''s behalf';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+
+reset role;
+
+-- Delete-my-data. Deleting the account has to take the profile and the consent
+-- history with it, and has to unlink — not delete — the answer-quality signal.
+do $$
+declare
+  a uuid := current_setting('smoke.user_a')::uuid;
+  b uuid := current_setting('smoke.user_b')::uuid;
+  survivors integer;
+begin
+  delete from auth.users where id = a;
+
+  select count(*) into survivors from users where id = a;
+  if survivors <> 0 then
+    raise exception 'the profile survived deletion of its account';
+  end if;
+
+  select count(*) into survivors from consent_events where user_id = a;
+  if survivors <> 0 then
+    raise exception 'consent history survived deletion of its account';
+  end if;
+
+  if not exists (
+    select 1 from chat_logs where question = 'నా DA ఎంత?' and user_id is null and feedback = -1
+  ) then
+    raise exception 'the chat log was deleted or kept its user link — ON DELETE SET NULL is not in effect';
+  end if;
+
+  -- The other account is untouched: deleting one person is not deleting everyone.
+  if not exists (select 1 from users where id = b) then
+    raise exception 'deleting one account removed another';
+  end if;
+  if not exists (select 1 from consent_events where user_id = b) then
+    raise exception 'deleting one account removed another account''s consent history';
   end if;
 end $$;
 

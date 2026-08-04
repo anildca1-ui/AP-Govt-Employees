@@ -64,20 +64,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create the roles Supabase provides
-        run: |
-          psql -v ON_ERROR_STOP=1 -c "create role anon nologin;" \
-                                  -c "create role authenticated nologin;" \
-                                  -c "create role service_role nologin bypassrls;"
-
-      # Supabase also provides the auth schema; migration 006 references
-      # auth.users and auth.uid(). A bare Postgres image needs this shim.
-      - name: Create the auth schema Supabase provides
-        run: |
-          psql -v ON_ERROR_STOP=1 \
-            -c "create schema if not exists auth;" \
-            -c "create table if not exists auth.users (id uuid primary key default gen_random_uuid());" \
-            -c "create or replace function auth.uid() returns uuid language sql stable as \$\$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid \$\$;"
+      # The roles, the auth schema and the default privileges Supabase provides
+      # and a bare Postgres image does not. Shared with scripts/schema-check.sh
+      # so a failure here can be reproduced locally without pushing.
+      - name: Shim what Supabase provides
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/000_supabase_shim.sql
 
       - name: Apply migrations
         run: |
@@ -85,15 +76,6 @@ jobs:
             echo "── $f"
             psql -v ON_ERROR_STOP=1 -q -f "$f"
           done
-
-      # Supabase grants these through default privileges on the public schema;
-      # a bare Postgres image does not, and without them the RLS assertions
-      # would fail on a permission error instead of testing the policies.
-      - name: Grant anon/authenticated the privileges Supabase grants
-        run: |
-          psql -v ON_ERROR_STOP=1 \
-            -c "grant usage on schema public to anon, authenticated;" \
-            -c "grant all on all tables in schema public to anon, authenticated;"
 
       - name: Schema smoke test
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/001_schema_smoke.sql
