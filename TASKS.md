@@ -48,8 +48,9 @@
       (OG images: site name is text-based per-page metadata; dedicated Telugu OG image generation
       and a Lighthouse run need a deployed site — measure after first deploy)
 - [x] /privacy + /disclaimer pages (Telugu+English), rate limiting, error tracking
-      (error tracking: no provider wired — pick Sentry or similar at deploy time; the app logs
-      structured errors server-side meanwhile)
+      (error tracking: Sentry wired and inert without a DSN — set NEXT_PUBLIC_SENTRY_DSN to
+      enable, and SENTRY_ORG/PROJECT/AUTH_TOKEN at deploy time for readable stack traces.
+      Personal data is stripped before any report is sent; /privacy discloses the service)
 
 ## BLOCKED
 (none yet)

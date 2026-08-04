@@ -30,6 +30,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
           <li><strong>సమ్మతి:</strong> ప్రతి సమ్మతి — ఏ తేదీన, ఏ పదాలతో అడిగామో సహా — రికార్డు చేయబడుతుంది. మీ సమ్మతి చరిత్రను మీరు చూడవచ్చు.</li>
           <li><strong>తొలగింపు:</strong> "నా డేటా తొలగించండి" ద్వారా మీ ఖాతా, వివరాలు, సమ్మతి రికార్డులు శాశ్వతంగా తొలగించబడతాయి. ఇది వెంటనే జరుగుతుంది; వెనక్కి తీసుకోలేరు.</li>
           <li><strong>మూడవ పక్షాలు:</strong> మీ వివరాలు అమ్మబడవు, ప్రకటనలకు వాడబడవు. డేటా Supabase (డేటాబేస్) లో నిల్వ అవుతుంది; AI సమాధానాల కోసం మీ ప్రశ్న మాత్రమే మోడల్ ప్రొవైడర్‌కు పంపబడుతుంది — మీ పేరు, నంబర్ కాదు.</li>
+          <li><strong>లోపాల నివేదిక:</strong> సైట్‌లో ఏదైనా విఫలమైతే, దాన్ని సరిచేయడానికి సాంకేతిక వివరాలు (ఏ పేజీ, ఏ లోపం) ఒక ఎర్రర్-ట్రాకింగ్ సేవకు పంపబడతాయి. మీ ఫోన్ నంబర్, బేసిక్ పే, మీరు అడిగిన ప్రశ్నలు — ఇవేవీ పంపబడవు; పంపే ముందు తొలగించబడతాయి.</li>
         </ul>
       </section>
 
@@ -42,6 +43,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
           <li><strong>Consent:</strong> Every consent is recorded as an event — including the date and the exact wording you were shown. You can review your consent history.</li>
           <li><strong>Deletion:</strong> "Delete my data" permanently removes your account, details and consent records. It takes effect immediately and cannot be undone.</li>
           <li><strong>Third parties:</strong> Your details are never sold or used for advertising. Data is stored in Supabase; for AI answers, only your question text is sent to the model provider — never your name or number.</li>
+          <li><strong>Error reports:</strong> When something on the site fails, the technical details needed to fix it — which page, which error — are sent to an error-tracking service. Your phone number, basic pay and the questions you asked are not: they are stripped out before the report leaves our server.</li>
         </ul>
       </section>
 
