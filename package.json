@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "dev": "pnpm --filter @ap-emp-ai/web dev",
+    "setup:check": "node scripts/setup-check.mjs",
     "test": "pnpm --filter \"./packages/*\" build && vitest run",
     "test:watch": "vitest",
     "typecheck": "pnpm --filter \"./packages/*\" build && pnpm -r typecheck",
