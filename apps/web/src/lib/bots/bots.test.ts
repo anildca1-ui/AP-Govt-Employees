@@ -9,6 +9,7 @@ import {
   sha256Hex,
 } from "./ingest";
 import { extractMessages, verifySignature } from "./whatsapp-protocol";
+import { allowedChannels, channelSource, isMonitoredChannel } from "./channel-monitor";
 import { createHmac } from "node:crypto";
 
 const PDF = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34]);
@@ -266,5 +267,35 @@ describe("WhatsApp webhook", () => {
     expect(extractMessages({ entry: [{ changes: [{ value: { statuses: [] } }] }] })).toEqual([]);
     expect(extractMessages({})).toEqual([]);
     expect(extractMessages(null)).toEqual([]);
+  });
+});
+
+describe("channel monitor", () => {
+  it("accepts a post from an allow-listed channel by @username or id", () => {
+    expect(isMonitoredChannel({ id: -100123, username: "ap_gos" }, ["@ap_gos"])).toBe(true);
+    expect(isMonitoredChannel({ id: -100123, username: "ap_gos" }, ["-100123"])).toBe(true);
+    expect(isMonitoredChannel({ id: -100123, username: "AP_GOs" }, ["@ap_gos"])).toBe(true);
+  });
+
+  it("ignores a channel that is not on the list", () => {
+    // A bot can be added to any channel. Without the allow-list a stranger
+    // could bury the review queue in junk under our own bot's identity.
+    expect(isMonitoredChannel({ id: -999, username: "random" }, ["@ap_gos"])).toBe(false);
+  });
+
+  it("fails closed when nothing is configured", () => {
+    // Forgetting to set the variable must monitor nothing, not everything.
+    expect(isMonitoredChannel({ id: -100123, username: "ap_gos" }, [])).toBe(false);
+  });
+
+  it("parses the allow-list, tolerating spacing and empty entries", () => {
+    expect(allowedChannels({ TELEGRAM_MONITOR_CHANNELS: " @a , , @b " })).toEqual(["@a", "@b"]);
+    expect(allowedChannels({})).toEqual([]);
+    expect(allowedChannels({ TELEGRAM_MONITOR_CHANNELS: "" })).toEqual([]);
+  });
+
+  it("labels the source so a reviewer sees which channel it came from", () => {
+    expect(channelSource({ id: -100123, username: "ap_gos" })).toBe("telegram-channel:@ap_gos");
+    expect(channelSource({ id: -100123, username: undefined })).toBe("telegram-channel:-100123");
   });
 });

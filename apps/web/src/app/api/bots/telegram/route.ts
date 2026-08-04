@@ -7,6 +7,11 @@ import {
   requiredEnv,
 } from "@/lib/bots/shared";
 import { intakeForwardedPdf, intakeReply, MAX_PDF_BYTES } from "@/lib/bots/ingest";
+import {
+  allowedChannels,
+  channelSource,
+  isMonitoredChannel,
+} from "@/lib/bots/channel-monitor";
 
 /**
  * Telegram webhook (PLAN.md Phase 4).
@@ -86,6 +91,39 @@ function buildBot() {
       return ctx.reply(intakeReply(outcome));
     } catch {
       return ctx.reply("Sorry — the document could not be processed. Please try again.");
+    }
+  });
+
+  // Read-only channel monitor: a GO posted to a channel our bot has been added
+  // to is queued silently. No reply — a bot answering into a channel of a few
+  // thousand people every time someone posts a file is noise, and the sender is
+  // not asking us anything.
+  bot.on("channel_post:document", async (ctx) => {
+    const allowed = allowedChannels();
+    if (!isMonitoredChannel(ctx.chat, allowed)) return;
+
+    const document = ctx.channelPost.document;
+    if ((document.file_size ?? 0) > MAX_PDF_BYTES) return;
+
+    const db = botServiceClient();
+    if (db === null) return;
+
+    try {
+      const file = await ctx.getFile();
+      const url = `https://api.telegram.org/file/bot${requiredEnv("TELEGRAM_BOT_TOKEN")}/${file.file_path}`;
+      const response = await fetch(url);
+      if (!response.ok) return;
+
+      await intakeForwardedPdf(db, {
+        bytes: new Uint8Array(await response.arrayBuffer()),
+        fileName: document.file_name ?? null,
+        mimeType: document.mime_type ?? null,
+        from: channelSource(ctx.chat),
+        source: channelSource(ctx.chat),
+      });
+    } catch {
+      // A channel post we cannot fetch is not worth failing the webhook over;
+      // Telegram would retry the whole update for hours.
     }
   });
 

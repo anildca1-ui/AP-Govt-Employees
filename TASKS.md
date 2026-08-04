@@ -32,7 +32,7 @@
 
 ## Phase 4 — Bots
 - [x] Telegram bot (grammY): /ask (RAG), /da (calculator), receives PDFs → ingest_queue; deploy webhook
-- [ ] Telegram channel monitor (read-only) → ingest_queue
+- [x] Telegram channel monitor (read-only) → ingest_queue
 - [x] WhatsApp Cloud API webhook: text → RAG answer; media (PDF) → ingest_queue with thank-you reply
 
 ## Phase 5 — Content modules
