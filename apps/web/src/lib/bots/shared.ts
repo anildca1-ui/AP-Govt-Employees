@@ -3,6 +3,7 @@ import { calculateDaArrears, formatINR, type RateRow } from "@ap-emp-ai/calc";
 import type { Citation, RetrievalDb } from "@ap-emp-ai/rag";
 import { prepareChat, validateQuestion } from "@/lib/chat/service";
 import { RATES } from "@/lib/calculators/rates-data";
+import { BOT_ANSWER_LIMIT, BOT_UPLOAD_LIMIT, rateLimit } from "@/lib/rate-limit";
 
 /**
  * Logic shared by the Telegram and WhatsApp bots (PLAN.md Phase 4).
@@ -46,6 +47,53 @@ export function requiredWebhookSecret(name: string): string {
     );
   }
   return value;
+}
+
+/**
+ * Per-sender throttling for the bots.
+ *
+ * Keyed on who sent the message, never on the request's IP. Every webhook call
+ * arrives from Meta's or Telegram's servers, so an IP key would put every user
+ * of the bot in one bucket — one spammer would then exhaust the budget for
+ * everyone, which is worse than not limiting at all.
+ *
+ * Refusals stay silent after the first one in the window. Replying to every
+ * refused message would make our own number the amplifier: an attacker sends a
+ * thousand messages and we send a thousand back, paying for each and burning
+ * the number's standing with Meta.
+ */
+export type BotAction = "ask" | "upload";
+
+export interface ThrottleDecision {
+  allowed: boolean;
+  /** What to send back, or null to stay silent because we already said it. */
+  notice: string | null;
+}
+
+export function botThrottle(
+  channel: BotChannel,
+  action: BotAction,
+  sender: string,
+  now: number = Date.now(),
+): ThrottleDecision {
+  const limit = action === "upload" ? BOT_UPLOAD_LIMIT : BOT_ANSWER_LIMIT;
+  const decision = rateLimit(`${channel}:${action}:${sender}`, { ...limit, now });
+  if (decision.allowed) return { allowed: true, notice: null };
+
+  const shouldWarn = rateLimit(`${channel}:notice:${action}:${sender}`, {
+    limit: 1,
+    windowMs: limit.windowMs,
+    now,
+  }).allowed;
+
+  const minutes = Math.max(1, Math.ceil(decision.retryAfterSeconds / 60));
+  return {
+    allowed: false,
+    notice: shouldWarn
+      ? `⏳ కొంచెం ఆగండి — ${minutes} నిమిషాల తర్వాత మళ్ళీ ప్రయత్నించండి. / ` +
+        `Too many messages just now — please try again in about ${minutes} minute(s).`
+      : null,
+  };
 }
 
 /** Anon key: retrieval reads approved documents only, and RLS enforces that. */

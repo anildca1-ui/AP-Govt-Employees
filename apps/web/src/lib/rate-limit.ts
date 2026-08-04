@@ -67,6 +67,17 @@ export const CHAT_LIMIT = { limit: 20, windowMs: 5 * 60 * 1000 };
 /** Quiz generation is heavier per call. */
 export const QUIZ_LIMIT = { limit: 5, windowMs: 5 * 60 * 1000 };
 
+/** A bot question costs the same as a web one, so it gets the same budget. */
+export const BOT_ANSWER_LIMIT = { limit: 20, windowMs: 5 * 60 * 1000 };
+/**
+ * Forwarded documents are limited per hour rather than per five minutes: what
+ * they consume is an administrator's review attention, which does not replenish
+ * on a five-minute timer. Set generously — somebody forwarding a batch of GOs
+ * they collected is the best thing that can happen to this corpus, and the
+ * limit exists to stop a script, not a contributor.
+ */
+export const BOT_UPLOAD_LIMIT = { limit: 15, windowMs: 60 * 60 * 1000 };
+
 /** Test hook. */
 export function resetRateLimits(): void {
   windows.clear();

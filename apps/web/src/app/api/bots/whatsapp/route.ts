@@ -1,6 +1,7 @@
 import {
   answerForBot,
   botServiceClient,
+  botThrottle,
   daCommand,
   logBotChat,
   requiredWebhookSecret,
@@ -128,6 +129,19 @@ export async function POST(request: Request): Promise<Response> {
 async function handleMessages(messages: WhatsAppMessage[]): Promise<void> {
   for (const message of messages) {
     try {
+      // Before any work that costs money or an administrator's attention. A
+      // valid signature proves the message came through Meta, not that the
+      // person behind it is being reasonable.
+      const throttle = botThrottle(
+        "whatsapp",
+        message.type === "document" ? "upload" : "ask",
+        message.from,
+      );
+      if (!throttle.allowed) {
+        if (throttle.notice !== null) await sendText(message.from, throttle.notice);
+        continue;
+      }
+
       if (message.type === "document" && message.document !== undefined) {
         await handleDocument(message);
       } else if (message.type === "text" && message.text !== undefined) {

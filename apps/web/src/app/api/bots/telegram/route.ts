@@ -2,6 +2,7 @@ import { Bot, webhookCallback } from "grammy";
 import {
   answerForBot,
   botServiceClient,
+  botThrottle,
   daCommand,
   logBotChat,
   requiredEnv,
@@ -48,6 +49,24 @@ let cached: WebhookHandler | null = null;
 function buildBot() {
   const bot = new Bot(requiredEnv("TELEGRAM_BOT_TOKEN"));
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ap-emp-ai.in";
+
+  // Ahead of every handler, so nothing that costs money or review attention
+  // runs first. A valid secret token proves the update came through Telegram,
+  // not that the person behind it is being reasonable.
+  bot.use(async (ctx, next) => {
+    // Channel posts come from the allow-listed channels the monitor watches,
+    // not from the public; the allow-list is the limit there, and throttling by
+    // chat would drop GOs a busy channel posts in a burst.
+    if (ctx.channelPost !== undefined) return next();
+
+    const sender = ctx.from?.id;
+    if (sender === undefined) return next();
+
+    const action = ctx.message?.document === undefined ? "ask" : "upload";
+    const throttle = botThrottle("telegram", action, String(sender));
+    if (throttle.allowed) return next();
+    if (throttle.notice !== null) await ctx.reply(throttle.notice);
+  });
 
   bot.command("start", (ctx) => ctx.reply(HELP));
   bot.command("help", (ctx) => ctx.reply(HELP));
