@@ -70,6 +70,15 @@ jobs:
                                   -c "create role authenticated nologin;" \
                                   -c "create role service_role nologin bypassrls;"
 
+      # Supabase also provides the auth schema; migration 006 references
+      # auth.users and auth.uid(). A bare Postgres image needs this shim.
+      - name: Create the auth schema Supabase provides
+        run: |
+          psql -v ON_ERROR_STOP=1 \
+            -c "create schema if not exists auth;" \
+            -c "create table if not exists auth.users (id uuid primary key default gen_random_uuid());" \
+            -c "create or replace function auth.uid() returns uuid language sql stable as \$\$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid \$\$;"
+
       - name: Apply migrations
         run: |
           for f in supabase/migrations/*.sql; do
