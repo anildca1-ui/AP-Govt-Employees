@@ -58,3 +58,8 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - Migration 004 adds search_chunks (0.6 vector + 0.4 normalised ts_rank, approved-only) and chunks_for_go_number (punctuation-insensitive exact lookup, document order). Two index-backed CTEs fused rather than one blended sort: measured 24ms vs 192ms at 30k chunks, because ORDER BY over an expression containing <=> cannot use HNSW.
 - Superseded documents are returned, not filtered — rule 3 needs them retrievable so the answer can follow the chain and say it did. Rerank spreads across documents (max 2/doc) since five chunks of one GO can only cite one GO.
 - Verified against Postgres 16 + pgvector: 9-check SQL smoke test, EXPLAIN confirming index usage, and a column-name diff proving the SQL's 16 return columns match exactly what the TS layer reads. 255 tests green.
+
+## 2026-08-03 — Phase 2.2 /api/chat
+- System prompt puts CLAUDE.md rules 1-4 in one exported constant the eval can hold steady: grounding ("a wrong number here becomes someone's wrong salary"), per-claim citation, supersession, reply-in-the-question's-language, verbatim disclaimer, and no arithmetic (the calculators own that).
+- NDJSON streaming — citations sent before the first token so the reader sees which GOs back the answer while it writes; SSE frames reassembled across chunk boundaries. Embedding failure degrades to keyword-only rather than failing the request.
+- Fixed a real ordering bug found by hitting the running route: an empty question returned 500 "SUPABASE_URL is not set" because clients were built as call arguments, before validation. Validation moved to the boundary; all four error paths re-verified. 293 tests green.

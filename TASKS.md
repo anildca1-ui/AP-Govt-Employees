@@ -20,7 +20,7 @@
 
 ## Phase 2 — RAG chat
 - [x] Hybrid search fn: GO-number regex short-circuit → else 0.6 vector + 0.4 tsvector, top-12, rerank to 5
-- [ ] /api/chat: streaming, system prompt enforcing citation+supersession+disclaimer+Telugu-if-asked-in-Telugu
+- [x] /api/chat: streaming, system prompt enforcing citation+supersession+disclaimer+Telugu-if-asked-in-Telugu
 - [ ] /chat UI: streaming bubbles, citation cards (GO no, date, PDF link), feedback 👍👎 → chat_logs
 - [ ] Eval harness: 30 golden Q&A pairs (Telugu+English) in tests/golden.jsonl; script scores citation-presence & groundedness; fails CI if <90% cite rate
 

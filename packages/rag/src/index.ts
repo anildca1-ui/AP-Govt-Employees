@@ -21,3 +21,19 @@ export type {
   RetrievalResult,
   RetrievedChunk,
 } from "./types.js";
+
+export {
+  buildContext,
+  formatChunk,
+  formatGoDate,
+  DISCLAIMER,
+  NOT_FOUND_EN,
+  NOT_FOUND_TE,
+  SYSTEM_PROMPT,
+} from "./answer/prompt.js";
+
+export {
+  streamAnswer,
+  DEFAULT_ANSWER_MODEL,
+  type StreamAnswerOptions,
+} from "./answer/gemini-stream.js";
