@@ -20,7 +20,8 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "psql \"postgresql://postgres:postgres@127.0.0.1:54322/postgres\" -v ON_ERROR_STOP=1 -f supabase/tests/001_schema_smoke.sql",
-    "eval": "pnpm --filter @ap-emp-ai/rag eval"
+    "eval": "pnpm --filter @ap-emp-ai/rag eval",
+    "gate": "./scripts/gate.sh"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

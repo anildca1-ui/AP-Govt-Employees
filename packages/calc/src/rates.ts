@@ -49,7 +49,7 @@ export class RateNotFoundError extends Error {
   }
 }
 
-function isWithin(row: RateRow, iso: string): boolean {
+function isWithin<TPayload>(row: RateRow<TPayload>, iso: string): boolean {
   if (row.effective_from > iso) return false;
   return row.effective_to === null || row.effective_to >= iso;
 }
