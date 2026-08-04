@@ -31,9 +31,9 @@
 - [x] /calculators index with search
 
 ## Phase 4 — Bots
-- [ ] Telegram bot (grammY): /ask (RAG), /da (calculator), receives PDFs → ingest_queue; deploy webhook
+- [x] Telegram bot (grammY): /ask (RAG), /da (calculator), receives PDFs → ingest_queue; deploy webhook
 - [ ] Telegram channel monitor (read-only) → ingest_queue
-- [ ] WhatsApp Cloud API webhook: text → RAG answer; media (PDF) → ingest_queue with thank-you reply
+- [x] WhatsApp Cloud API webhook: text → RAG answer; media (PDF) → ingest_queue with thank-you reply
 
 ## Phase 5 — Content modules
 - [ ] /gos library: filters, infinite scroll, supersession chain visual, per-GO page with AI summary (Telugu)

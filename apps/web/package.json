@@ -12,6 +12,7 @@
     "@ap-emp-ai/calc": "workspace:*",
     "@ap-emp-ai/rag": "workspace:*",
     "@supabase/supabase-js": "^2.112.0",
+    "grammy": "^1.45.1",
     "next": "15.5.22",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
