@@ -26,7 +26,7 @@
 
 ## Phase 3 — Calculators
 - [x] rates table seed: current DA %, HRA slabs, RPS-2022 master scale, NPS %, IT slabs (each row with source_go placeholder for me to verify)
-- [ ] packages/calc: 13 pure functions per PLAN.md Part 4, each with Vitest worked-example tests
+- [x] packages/calc: 13 pure functions per PLAN.md Part 4, each with Vitest worked-example tests
 - [ ] 13 calculator pages: shadcn forms, Telugu labels, WhatsApp-share, print/PDF
 - [ ] /calculators index with search
 
