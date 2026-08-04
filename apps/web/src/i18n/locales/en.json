@@ -102,5 +102,87 @@
     "error": "The answer could not be generated. Please try again.",
     "emptyState": "No questions yet.",
     "examples": "Example questions"
+  },
+  "calculators": {
+    "title": "Calculators",
+    "intro": "Every calculation follows the official GOs. Your data stays on your phone.",
+    "searchPlaceholder": "Search calculators",
+    "noResults": "No matches",
+    "featured": "Most used",
+    "all": "All",
+    "calculate": "Calculate",
+    "reset": "Reset",
+    "result": "Result",
+    "share": "Share on WhatsApp",
+    "print": "Print / PDF",
+    "basicPay": "Basic pay",
+    "fromMonth": "From (month)",
+    "toMonth": "To (month)",
+    "paidDa": "DA already paid %",
+    "cashFraction": "Cash portion (0-1)",
+    "hraPercent": "HRA %",
+    "total": "Total",
+    "cash": "Cash",
+    "gpfCps": "GPF / CPS",
+    "month": "Month",
+    "difference": "Difference",
+    "asPer": "Source",
+    "unverifiedWarning": "⚠️ These rates have not yet been checked against the GO. Verify with the original GO.",
+    "clientSide": "This runs entirely on your device — nothing you type is sent anywhere.",
+    "comingSoon": "Coming soon",
+    "items": {
+      "da-arrears": {
+        "title": "DA Arrears",
+        "description": "Enter basic pay and period — get a month-wise arrears table"
+      },
+      "salary": {
+        "title": "Full Salary",
+        "description": "Basic to DA, HRA and deductions — your net salary"
+      },
+      "increment": {
+        "title": "Annual Increment",
+        "description": "Your new basic pay after the annual increment"
+      },
+      "fixation": {
+        "title": "Promotion / AAS Fixation",
+        "description": "Pay fixation on promotion or 6-12-18-24 AAS"
+      },
+      "nps": {
+        "title": "NPS / CPS Projector",
+        "description": "Projected corpus at retirement"
+      },
+      "gps": {
+        "title": "GPS Pension Estimate",
+        "description": "Guaranteed Pension Scheme, compared with CPS"
+      },
+      "ops-pension": {
+        "title": "OPS Pension & Commutation",
+        "description": "Old Pension Scheme pension and commutation"
+      },
+      "gratuity": {
+        "title": "Gratuity",
+        "description": "Gratuity payable on your qualifying service"
+      },
+      "leave-encashment": {
+        "title": "Leave Encashment",
+        "description": "EL encashment and surrender leave"
+      },
+      "income-tax": {
+        "title": "Income Tax (old vs new)",
+        "description": "Both regimes calculated, with a recommendation"
+      },
+      "apgli-gpf": {
+        "title": "APGLI & GPF",
+        "description": "APGLI premium and GPF interest"
+      },
+      "retirement": {
+        "title": "Retirement Countdown",
+        "description": "Retirement date, service and a benefits summary"
+      },
+      "medical": {
+        "title": "Medical Reimbursement Helper",
+        "description": "Claim MR or use EHS? A guided answer"
+      }
+    }
   }
 }

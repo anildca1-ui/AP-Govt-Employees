@@ -27,8 +27,8 @@
 ## Phase 3 — Calculators
 - [x] rates table seed: current DA %, HRA slabs, RPS-2022 master scale, NPS %, IT slabs (each row with source_go placeholder for me to verify)
 - [x] packages/calc: 13 pure functions per PLAN.md Part 4, each with Vitest worked-example tests
-- [ ] 13 calculator pages: shadcn forms, Telugu labels, WhatsApp-share, print/PDF
-- [ ] /calculators index with search
+- [x] 13 calculator pages: shadcn forms, Telugu labels, WhatsApp-share, print/PDF
+- [x] /calculators index with search
 
 ## Phase 4 — Bots
 - [ ] Telegram bot (grammY): /ask (RAG), /da (calculator), receives PDFs → ingest_queue; deploy webhook
