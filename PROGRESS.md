@@ -63,3 +63,8 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - System prompt puts CLAUDE.md rules 1-4 in one exported constant the eval can hold steady: grounding ("a wrong number here becomes someone's wrong salary"), per-claim citation, supersession, reply-in-the-question's-language, verbatim disclaimer, and no arithmetic (the calculators own that).
 - NDJSON streaming — citations sent before the first token so the reader sees which GOs back the answer while it writes; SSE frames reassembled across chunk boundaries. Embedding failure degrades to keyword-only rather than failing the request.
 - Fixed a real ordering bug found by hitting the running route: an empty question returned 500 "SUPABASE_URL is not set" because clients were built as call arguments, before validation. Validation moved to the boundary; all four error paths re-verified. 293 tests green.
+
+## 2026-08-03 — Phase 2.3 /chat UI
+- Streaming bubbles with citation cards (GO number, dd.mm.yyyy date, subject, PDF link) and an amber superseded badge; citations render before the first token so the reader sees the GOs while the answer is still being written.
+- 👍/👎 posts to /api/chat/feedback against the chat_logs row id, which the done event now carries — feedback is hidden when logging is unconfigured rather than posting into the void. NDJSON reader buffers across chunk boundaries (a split citations line would otherwise render an answer with no sources).
+- Verified in a real browser at 390px with the API stubbed: answer streams, 2 citation cards, superseded badge, feedback posts {logId, feedback:1}, zero horizontal overflow. 299 tests green.

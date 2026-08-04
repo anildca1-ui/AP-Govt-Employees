@@ -125,7 +125,11 @@ export async function POST(request: Request): Promise<Response> {
           answer += token;
           send({ type: "token", text: token });
         }
-        send({ type: "done" });
+        // Logged after the last token, before the stream closes: the reader
+        // already has the whole answer, and the id is what the 👍/👎 buttons
+        // need to attach feedback to this specific reply.
+        const logId = await logChat({ session, lang, question, answer, citations });
+        send({ type: "done", logId });
       } catch (error) {
         send({
           type: "error",
@@ -133,8 +137,6 @@ export async function POST(request: Request): Promise<Response> {
         });
       } finally {
         controller.close();
-        // Logged after the stream closes so a slow insert never delays a token.
-        void logChat({ session, lang, question, answer, citations });
       }
     },
   });
@@ -149,6 +151,7 @@ export async function POST(request: Request): Promise<Response> {
   });
 }
 
+/** Returns the chat_logs row id, or null when logging is off or failed. */
 async function logChat({
   session,
   lang,
@@ -161,20 +164,27 @@ async function logChat({
   question: string;
   answer: string;
   citations: { documentId: string }[];
-}): Promise<void> {
+}): Promise<string | null> {
   const db = loggingClient();
-  if (db === null) return;
+  if (db === null) return null;
   try {
-    await db.from("chat_logs").insert({
-      session,
-      question,
-      answer,
-      cited_docs: citations.map((c) => c.documentId),
-      lang,
-      channel: "web",
-    });
+    const { data, error } = await db
+      .from("chat_logs")
+      .insert({
+        session,
+        question,
+        answer,
+        cited_docs: citations.map((c) => c.documentId),
+        lang,
+        channel: "web",
+      })
+      .select("id")
+      .single();
+    if (error) return null;
+    return (data as { id: string }).id;
   } catch {
-    // Logging is for improving answers later; losing a row must never surface
-    // as a failed answer to the person asking.
+    // Logging exists to improve answers later; losing a row must never surface
+    // as a failed answer to the person who asked.
+    return null;
   }
 }

@@ -110,7 +110,9 @@ export async function prepareChat(
 export type ChatEvent =
   | { type: "citations"; citations: Citation[]; mode: RetrievalResult["mode"] }
   | { type: "token"; text: string }
-  | { type: "done" }
+  // logId is what the 👍/👎 buttons update. Null when logging is unconfigured or
+  // failed, and the UI hides feedback rather than posting into the void.
+  | { type: "done"; logId: string | null }
   | { type: "error"; message: string };
 
 export function encodeEvent(event: ChatEvent): string {

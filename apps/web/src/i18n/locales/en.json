@@ -79,5 +79,28 @@
     "notApprovedYet": "Approve this document first — supersession links join approved GOs",
     "status": "Status",
     "unknown": "Unknown"
+  },
+  "chat": {
+    "title": "AI Chat",
+    "intro": "Ask your question — every answer is grounded in a GO, with its number and link.",
+    "placeholder": "e.g. What is the current DA percentage? or What does G.O.Ms.No.60 say?",
+    "send": "Send",
+    "sending": "Searching…",
+    "stop": "Stop",
+    "you": "You",
+    "assistant": "Answer",
+    "sources": "Sources",
+    "sourcesPending": "Finding sources…",
+    "noSources": "No matching GOs found",
+    "supersededBadge": "Superseded",
+    "viewPdf": "PDF",
+    "exactMatch": "Exact GO match",
+    "helpful": "Was this helpful?",
+    "yes": "Yes",
+    "no": "No",
+    "thanks": "Thank you",
+    "error": "The answer could not be generated. Please try again.",
+    "emptyState": "No questions yet.",
+    "examples": "Example questions"
   }
 }
