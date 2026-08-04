@@ -159,7 +159,10 @@ Each calculator: pure TS function in `packages/calc/src/*.ts` + Vitest unit test
 
 ## PART 7 — OPEN DECISIONS (resolve before the phase that needs them)
 
-- **Contact email for the scraper User-Agent** — `CLAUDE.md` rule 3 carries a `<contact-email>` placeholder. Needed before Phase 1 scraper A goes live; a real, monitored address is part of being a polite crawler.
-- **Calculator count** — the architecture sketch in Part 2 said "15 tools"; Part 4 enumerates 13 specs (item 11 bundles APGLI + GPF). Treat **13** as authoritative (matches TASKS.md Phase 3). If APGLI and GPF are later split, and the Medical Reimbursement helper is counted as RAG rather than a calculator, the number moves — update both documents together.
-- **Embedding dimension** — schema Part 3 pins `vector(1024)` (BGE-M3's size). `text-embedding-3-large` is 3072-d natively; if starting on OpenAI, either request 1024 dimensions via the API's `dimensions` parameter or change the column and re-embed. Decide in Phase 0, before migration 001 lands.
-- **Hosting of the OCR worker** — Vercel cannot run Surya; if OCR fallback is needed, it runs as a GitHub Action or separate service (Part 2 already allows Python there).
+All four are now settled in code. The one that still needs a human is the first,
+and it is enforced rather than trusted.
+
+- **Contact email for the scraper User-Agent** — ⚠️ **needs a human.** Supplied at runtime as `SCRAPER_CONTACT_EMAIL`, sent as `ap-emp-ai-bot (contact: $SCRAPER_CONTACT_EMAIL)`. `packages/ingest/src/politeness/user-agent.ts` refuses to scrape when it is unset or obviously fake, so the decision cannot be skipped by forgetting it — but no crawl can run until a real, monitored address is set.
+- **Calculator count** — ✅ **13**, consistent across Part 4, TASKS.md Phase 3, the 13 route directories and the 13 entries in `apps/web/src/lib/calculators/registry.ts` (item 11 bundles APGLI + GPF). Part 2 now points at Part 4 rather than naming a number, so there is one place to update if APGLI and GPF are ever split.
+- **Embedding dimension** — ✅ **1024**, pinned as `EMBEDDING_DIMENSIONS` and matching `chunks.embedding vector(1024)`. The OpenAI provider sends `dimensions: 1024` on every request — mandatory, not an optimisation, since `text-embedding-3-large` is 3072-d natively — and both providers throw on a returned vector of the wrong width rather than letting a mis-sized embedding reach the database. BGE-M3 is 1024-d natively and sends no parameter.
+- **Hosting of the OCR worker** — ✅ **deferred by design.** `packages/ingest/src/pdf/ocr/surya.ts` is a typed stub against a future Python worker; Gemini vision is the working fallback meanwhile, and OCR can be switched off entirely. Nothing depends on Surya existing, so the hosting choice can wait until scanned GOs actually justify it.

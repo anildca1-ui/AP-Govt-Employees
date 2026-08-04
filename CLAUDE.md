@@ -12,7 +12,7 @@ Next.js 15 App Router + TypeScript + Tailwind + shadcn/ui · Supabase (Postgres/
 ## Hard rules
 1. NEVER hardcode a pay/DA/tax rate in a component — rates come from the `rates` table / `config/rates/*.json` with a `source_go` reference.
 2. RAG answers: retrieval-grounded only; must cite GO no+date+link; must respect `superseded_by`; must append the bilingual disclaimer.
-3. Scrapers: 1 request per 2s, nightly cron, custom User-Agent `"ap-emp-ai-bot (contact: <contact-email>)"`, obey robots.txt, download official PDFs only, store sha256, skip duplicates.
+3. Scrapers: 1 request per 2s, nightly cron, custom User-Agent `"ap-emp-ai-bot (contact: $SCRAPER_CONTACT_EMAIL)"`, obey robots.txt, download official PDFs only, store sha256, skip duplicates. The address must be real and monitored; with it unset the scrapers refuse to run rather than crawl anonymously.
 4. No unofficial WhatsApp libraries. Cloud API only.
 5. All user-facing strings in i18n files (`te.json` default, `en.json`).
 6. Every ingested document lands in `ingest_queue` → admin approval before it enters RAG.
