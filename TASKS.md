@@ -25,7 +25,7 @@
 - [x] Eval harness: 30 golden Q&A pairs (Telugu+English) in tests/golden.jsonl; script scores citation-presence & groundedness; fails CI if <90% cite rate
 
 ## Phase 3 — Calculators
-- [ ] rates table seed: current DA %, HRA slabs, RPS-2022 master scale, NPS %, IT slabs (each row with source_go placeholder for me to verify)
+- [x] rates table seed: current DA %, HRA slabs, RPS-2022 master scale, NPS %, IT slabs (each row with source_go placeholder for me to verify)
 - [ ] packages/calc: 13 pure functions per PLAN.md Part 4, each with Vitest worked-example tests
 - [ ] 13 calculator pages: shadcn forms, Telugu labels, WhatsApp-share, print/PDF
 - [ ] /calculators index with search
