@@ -22,7 +22,7 @@
 - [x] Hybrid search fn: GO-number regex short-circuit → else 0.6 vector + 0.4 tsvector, top-12, rerank to 5
 - [x] /api/chat: streaming, system prompt enforcing citation+supersession+disclaimer+Telugu-if-asked-in-Telugu
 - [x] /chat UI: streaming bubbles, citation cards (GO no, date, PDF link), feedback 👍👎 → chat_logs
-- [ ] Eval harness: 30 golden Q&A pairs (Telugu+English) in tests/golden.jsonl; script scores citation-presence & groundedness; fails CI if <90% cite rate
+- [x] Eval harness: 30 golden Q&A pairs (Telugu+English) in tests/golden.jsonl; script scores citation-presence & groundedness; fails CI if <90% cite rate
 
 ## Phase 3 — Calculators
 - [ ] rates table seed: current DA %, HRA slabs, RPS-2022 master scale, NPS %, IT slabs (each row with source_go placeholder for me to verify)

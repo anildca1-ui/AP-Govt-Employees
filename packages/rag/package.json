@@ -12,10 +12,13 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "eval": "pnpm build && node --env-file-if-exists=../../.env dist/eval/run-eval.js"
   },
   "devDependencies": {
     "typescript": "^5.7.2"

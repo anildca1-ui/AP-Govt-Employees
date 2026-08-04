@@ -1,0 +1,34 @@
+// Golden set for the RAG eval (PLAN.md Phase 2). One JSON object per line.
+// expectCitations empty = the corpus cannot answer; the model must say so, not improvise.
+// GO numbers here come from web research and are UNVERIFIED — confirm against the GO PDFs
+// at the Phase-2 review checkpoint (PLAN.md Part 5.2) and correct as needed.
+{"id": "da-current-te", "lang": "te", "question": "ప్రస్తుత డీఏ ఎంత శాతం?", "expectCitations": ["G.O.Ms.No.60"], "expectContains": ["37.31"], "notes": "Current DA in RPS-2022 scales"}
+{"id": "da-current-en", "lang": "en", "question": "What is the current DA percentage for AP government employees?", "expectCitations": ["G.O.Ms.No.60"], "expectContains": ["37.31"]}
+{"id": "da-supersession-te", "lang": "te", "question": "33.67% డీఏ ఇప్పటికీ అమల్లో ఉందా?", "expectCitations": ["G.O.Ms.No.60"], "expectSupersession": true, "notes": "Must say the earlier rate was superseded"}
+{"id": "da-supersession-en", "lang": "en", "question": "Is the 33.67% DA rate still current?", "expectCitations": ["G.O.Ms.No.60"], "expectSupersession": true}
+{"id": "da-effective-en", "lang": "en", "question": "From which date is the 37.31% DA effective?", "expectCitations": ["G.O.Ms.No.60"], "expectContains": ["01.01.2024"]}
+{"id": "da-arrears-te", "lang": "te", "question": "డీఏ బకాయిలు ఎలా చెల్లిస్తారు?", "expectCitations": ["G.O.Ms.No.60"], "notes": "Cash vs instalments per the sanctioning GO"}
+{"id": "da-by-number-en", "lang": "en", "question": "What does G.O.Ms.No.60 say?", "expectCitations": ["G.O.Ms.No.60"], "notes": "Exercises the GO-number short-circuit"}
+{"id": "da-by-number-te", "lang": "te", "question": "G.O.Ms.No.60 లో ఏమి ఉంది?", "expectCitations": ["G.O.Ms.No.60"]}
+{"id": "prc-fitment-en", "lang": "en", "question": "What fitment percentage did PRC 2022 give?", "expectCitations": ["G.O.Ms.No.1"], "expectContains": ["23"], "notes": "RPS-2022 fitment"}
+{"id": "prc-fitment-te", "lang": "te", "question": "పీఆర్‌సీ 2022 లో ఫిట్‌మెంట్ ఎంత?", "expectCitations": ["G.O.Ms.No.1"], "expectContains": ["23"]}
+{"id": "master-scale-en", "lang": "en", "question": "What is the minimum and maximum of the RPS-2022 master scale?", "expectCitations": ["G.O.Ms.No.1"], "expectContains": ["20000", "179000"]}
+{"id": "master-scale-te", "lang": "te", "question": "ఆర్‌పీఎస్-2022 మాస్టర్ స్కేల్ కనిష్ఠ, గరిష్ఠ వేతనం ఎంత?", "expectCitations": ["G.O.Ms.No.1"], "expectContains": ["20000", "179000"]}
+{"id": "ir-fixation-en", "lang": "en", "question": "Is Interim Relief counted as pay for fixation under RPS-2022?", "expectCitations": ["G.O.Ms.No.1"], "notes": "IR is not pay for fixation"}
+{"id": "hra-slabs-en", "lang": "en", "question": "What are the HRA slabs under RPS-2022?", "expectCitations": ["G.O.27"], "expectContains": ["24", "16"], "notes": "Revised slabs per GO 27"}
+{"id": "hra-slabs-te", "lang": "te", "question": "ఆర్‌పీఎస్-2022 లో హెచ్‌ఆర్‌ఏ శ్లాబులు ఏమిటి?", "expectCitations": ["G.O.27"], "expectContains": ["24", "16"]}
+{"id": "hra-city-en", "lang": "en", "question": "What HRA percentage applies in Vijayawada?", "expectCitations": ["G.O.27"], "expectContains": ["16"]}
+{"id": "cps-contribution-en", "lang": "en", "question": "What percentage does the government contribute to CPS?", "expectCitations": [], "notes": "Only if a GO in corpus states it; otherwise not-found"}
+{"id": "gps-assured-te", "lang": "te", "question": "జీపీఎస్ లో ఎంత పెన్షన్ హామీ ఇస్తారు?", "expectCitations": [], "notes": "AP GPS Act — not-found unless ingested"}
+{"id": "ops-commutation-en", "lang": "en", "question": "What is the maximum commutation percentage of pension?", "expectCitations": []}
+{"id": "el-encashment-en", "lang": "en", "question": "How many days of earned leave can be encashed at retirement?", "expectCitations": []}
+{"id": "surrender-leave-te", "lang": "te", "question": "సరెండర్ లీవ్ ఎన్ని రోజులు తీసుకోవచ్చు?", "expectCitations": []}
+{"id": "gratuity-ceiling-en", "lang": "en", "question": "What is the gratuity ceiling for AP government employees?", "expectCitations": []}
+{"id": "eot-141-te", "lang": "te", "question": "ఈఓటీ 141 పరీక్ష సిలబస్ ఏమిటి?", "expectCitations": []}
+{"id": "ehs-vs-mr-en", "lang": "en", "question": "Should I claim medical reimbursement or use EHS?", "expectCitations": [], "notes": "Wizard territory; corpus may not answer"}
+{"id": "out-of-scope-en", "lang": "en", "question": "What is the capital of France?", "expectCitations": [], "notes": "Must refuse, not answer from general knowledge"}
+{"id": "out-of-scope-te", "lang": "te", "question": "చంద్రుడు దేనితో తయారయ్యాడు?", "expectCitations": []}
+{"id": "fake-go-en", "lang": "en", "question": "What does G.O.Ms.No.999999 say?", "expectCitations": [], "notes": "Non-existent GO must not be invented"}
+{"id": "fake-go-te", "lang": "te", "question": "G.O.Ms.No.888888 లో ఏమి ఉంది?", "expectCitations": []}
+{"id": "arithmetic-en", "lang": "en", "question": "My basic pay is 52590. Calculate my exact DA arrears for 18 months.", "expectCitations": [], "notes": "Must decline arithmetic and point at the calculator"}
+{"id": "arithmetic-te", "lang": "te", "question": "నా బేసిక్ పే 52590. నా డీఏ బకాయి ఎంత వస్తుంది లెక్కించండి.", "expectCitations": []}

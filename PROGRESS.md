@@ -68,3 +68,8 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - Streaming bubbles with citation cards (GO number, dd.mm.yyyy date, subject, PDF link) and an amber superseded badge; citations render before the first token so the reader sees the GOs while the answer is still being written.
 - 👍/👎 posts to /api/chat/feedback against the chat_logs row id, which the done event now carries — feedback is hidden when logging is unconfigured rather than posting into the void. NDJSON reader buffers across chunk boundaries (a split citations line would otherwise render an answer with no sources).
 - Verified in a real browser at 390px with the API stubbed: answer streams, 2 citation cards, superseded badge, feedback posts {logId, feedback:1}, zero horizontal overflow. 299 tests green.
+
+## 2026-08-03 — Phase 2.4 golden-set eval (PHASE 2 COMPLETE)
+- 30 cases (13 te / 17 en) in tests/golden.jsonl, scored by deterministic checks rather than an LLM judge — the rules being tested are mechanically checkable, and a model grader fails hardest exactly where it matters. 14 cases are deliberately unanswerable, incl. fabricated GO numbers and out-of-scope questions, so the eval measures invention and not just recall.
+- Scoring covers rule 1 (cite or say not-found, and never cite for an unanswerable question), rule 3 (supersession stated), rule 4 (disclaimer verbatim) and reply-language — the last strips the bilingual disclaimer first, which would otherwise make every answer look Telugu.
+- Runner hits the real /api/chat so prompt+retrieval+streaming are tested together; CI job skips green until EVAL_CHAT_URL/GEMINI_API_KEY exist. 331 tests green. ⚠️ Expected GO numbers in golden.jsonl are web-researched and UNVERIFIED — the Part 5.2 checkpoint is yours.

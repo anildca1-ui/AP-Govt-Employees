@@ -88,3 +88,41 @@ jobs:
 
       - name: Schema smoke test
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/001_schema_smoke.sql
+
+  eval:
+    name: golden-set eval
+    runs-on: ubuntu-latest
+    steps:
+      # The eval needs a live corpus and model keys, so it can only run where
+      # those exist. It reports skipped rather than red on a repository without
+      # them — a gate nobody can satisfy yet is a gate people learn to ignore.
+      - id: guard
+        run: |
+          if [ -z "${{ secrets.GEMINI_API_KEY }}" ] || [ -z "${{ secrets.EVAL_CHAT_URL }}" ]; then
+            echo "::notice::Skipping the golden-set eval: set the EVAL_CHAT_URL and GEMINI_API_KEY secrets to enable it."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.guard.outputs.configured == 'true'
+        uses: actions/checkout@v4
+
+      - if: steps.guard.outputs.configured == 'true'
+        uses: pnpm/action-setup@v4
+
+      - if: steps.guard.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - if: steps.guard.outputs.configured == 'true'
+        run: pnpm install --frozen-lockfile
+
+      # Exits non-zero below the 90% cite rate PLAN.md Phase 2 specifies.
+      - if: steps.guard.outputs.configured == 'true'
+        name: Run the golden set
+        env:
+          CHAT_URL: ${{ secrets.EVAL_CHAT_URL }}
+        run: pnpm eval

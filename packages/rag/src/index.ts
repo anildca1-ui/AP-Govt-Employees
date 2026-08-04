@@ -37,3 +37,15 @@ export {
   DEFAULT_ANSWER_MODEL,
   type StreamAnswerOptions,
 } from "./answer/gemini-stream.js";
+
+export {
+  citesAll,
+  citesAnyGo,
+  parseGoldenJsonl,
+  scoreCase,
+  summarise,
+  CITE_RATE_THRESHOLD,
+  type CaseScore,
+  type EvalSummary,
+  type GoldenCase,
+} from "./eval/score.js";
