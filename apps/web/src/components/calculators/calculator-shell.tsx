@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState, type ReactNode } from "react";
 import type { Dictionary } from "@/i18n/dictionary";
 
 /**
@@ -32,23 +33,40 @@ export interface CalcOutcome {
   unverified: boolean;
 }
 
-export function CalculatorShell({
-  title,
-  description,
-  fields,
-  dict,
-  compute,
-}: {
+export interface CalculatorShellProps {
   title: string;
   description: string;
   fields: CalcField[];
   dict: Dictionary;
   /** Pure: values in, rendered outcome out. Throws are shown to the user. */
   compute: (values: Record<string, string>) => CalcOutcome;
-}) {
+}
+
+/**
+ * useSearchParams (for the dashboard's ?basicPay= prefill) makes the component
+ * dynamic, and a statically prerendered page must wrap that in Suspense or the
+ * whole build fails. The fallback renders nothing: the shell appears on
+ * hydration, and these pages are client-computed anyway.
+ */
+export function CalculatorShell(props: CalculatorShellProps) {
+  return (
+    <Suspense fallback={null}>
+      <CalculatorShellInner {...props} />
+    </Suspense>
+  );
+}
+
+function CalculatorShellInner({ title, description, fields, dict, compute }: CalculatorShellProps) {
+  // The dashboard links here with the profile's values in the query string
+  // (?basicPay=52590); a matching field name is prefilled. URL over context or
+  // storage because it also makes any prefilled calculator shareable.
+  const search = useSearchParams();
   const initial = useMemo(
-    () => Object.fromEntries(fields.map((f) => [f.name, f.defaultValue ?? ""])),
-    [fields],
+    () =>
+      Object.fromEntries(
+        fields.map((f) => [f.name, search.get(f.name) ?? f.defaultValue ?? ""]),
+      ),
+    [fields, search],
   );
   const [values, setValues] = useState<Record<string, string>>(initial);
   const [outcome, setOutcome] = useState<CalcOutcome | null>(null);

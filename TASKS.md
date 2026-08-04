@@ -42,8 +42,8 @@
 - [x] /links directory (categorized, with uptime ping badge)
 
 ## Phase 6 — Users & polish
-- [ ] Supabase auth (phone OTP), profile (basic pay, scale, dept, CPS/OPS), consent logging, delete-my-data
-- [ ] Personal dashboard: prefilled calculators; "DA change impact" card
+- [x] Supabase auth (phone OTP), profile (basic pay, scale, dept, CPS/OPS), consent logging, delete-my-data
+- [x] Personal dashboard: prefilled calculators; "DA change impact" card
 - [ ] SEO: per-GO metadata, sitemap, Telugu OG images; Lighthouse ≥90 mobile
 - [ ] /privacy + /disclaimer pages (Telugu+English), rate limiting, error tracking
 

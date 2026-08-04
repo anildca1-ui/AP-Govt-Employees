@@ -11,6 +11,7 @@
   "dependencies": {
     "@ap-emp-ai/calc": "workspace:*",
     "@ap-emp-ai/rag": "workspace:*",
+    "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.0",
     "grammy": "^1.45.1",
     "next": "15.5.22",
