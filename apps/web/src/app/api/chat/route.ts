@@ -7,6 +7,7 @@ import {
   validateQuestion,
   type ChatEvent,
 } from "@/lib/chat/service";
+import { CHAT_LIMIT, clientKey, rateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/chat — a grounded, streaming answer.
@@ -66,6 +67,16 @@ async function embedQuestion(text: string): Promise<number[] | null> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  // Before any parsing: this endpoint spends model tokens per call, and a 429
+  // with Retry-After is the correct answer to a hammer, not a queue.
+  const limited = rateLimit(`chat:${clientKey(request)}`, CHAT_LIMIT);
+  if (!limited.allowed) {
+    return Response.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "retry-after": String(limited.retryAfterSeconds) } },
+    );
+  }
+
   let body: { question?: unknown; session?: unknown; lang?: unknown };
   try {
     body = (await request.json()) as typeof body;

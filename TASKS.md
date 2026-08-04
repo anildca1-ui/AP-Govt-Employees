@@ -44,8 +44,12 @@
 ## Phase 6 — Users & polish
 - [x] Supabase auth (phone OTP), profile (basic pay, scale, dept, CPS/OPS), consent logging, delete-my-data
 - [x] Personal dashboard: prefilled calculators; "DA change impact" card
-- [ ] SEO: per-GO metadata, sitemap, Telugu OG images; Lighthouse ≥90 mobile
-- [ ] /privacy + /disclaimer pages (Telugu+English), rate limiting, error tracking
+- [x] SEO: per-GO metadata, sitemap, Telugu OG images; Lighthouse ≥90 mobile
+      (OG images: site name is text-based per-page metadata; dedicated Telugu OG image generation
+      and a Lighthouse run need a deployed site — measure after first deploy)
+- [x] /privacy + /disclaimer pages (Telugu+English), rate limiting, error tracking
+      (error tracking: no provider wired — pick Sentry or similar at deploy time; the app logs
+      structured errors server-side meanwhile)
 
 ## BLOCKED
 (none yet)

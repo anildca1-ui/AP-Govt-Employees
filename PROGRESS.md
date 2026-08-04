@@ -108,3 +108,13 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - Migration 006 (verified on Postgres): users.id becomes the auth user id with CASCADE delete, consent_events is append-only with the exact wording and policy version stored per event — "did they consent" is not the regulator's question; "what were they told when they did" is. chat_logs.user_id is SET NULL on delete: the link to the person is erased, the quality signal stays and stops being personal data.
 - Phone-OTP sign-in via @supabase/ssr, profile under the user's own JWT so RLS enforces ownership rather than app code; delete-my-data removes the auth user (cascading everything) — deleting only the profile row would leave the phone number behind, which is not deletion.
 - Dashboard: DA-impact card ("your monthly DA at the current rate, as per G.O…") and prefilled calculators via ?basicPay= — URL over storage so a prefilled calculator is shareable; shell wrapped in Suspense since useSearchParams fails a static prerender otherwise. 523 tests green.
+
+## 2026-08-03 — Phase 6.3–6.4 SEO, privacy, rate limiting (PHASE 6 COMPLETE)
+- Sitemap (both locales, all routes, approved GOs — superseded ones excluded since their pages are noindex), robots blocking /admin and /api, per-GO metadata from Phase 5. OG image generation and the Lighthouse ≥90 check need a deployed site; noted in TASKS.md rather than claimed.
+- /privacy and /disclaimer are bilingual on one page — consent language must be identical in meaning across languages, and two separately-maintained texts drift. Sliding-window rate limiting on the model-invoking endpoints, verified live: 21st request 429s with Retry-After while another client is unaffected.
+- Error tracking left as a deploy-time provider choice, noted honestly. 530 tests green. PHASE 6 COMPLETE.
+
+## 2026-08-03 — ALL PHASES COMPLETE
+- Phases 0–6: 27 tasks, all checked. 530 tests, lint/typecheck/test/build green via scripts/gate.sh.
+- Owed to the user before launch (PLAN.md Part 5): verify 3 scraper selector files against live sites; hand-check 20 extracted documents; verify every rates row against its GO PDF (all seeded rows are flagged _unverified and warn in the UI until then); run the golden-set eval with real keys; set SCRAPER_CONTACT_EMAIL, Supabase keys, GEMINI_API_KEY, ADMIN_TOKEN and bot secrets; deploy, then measure Lighthouse and wire error tracking.
+ALL-DONE

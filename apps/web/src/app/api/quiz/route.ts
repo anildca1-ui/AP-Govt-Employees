@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { buildContext, retrieve, type RetrievalDb } from "@ap-emp-ai/rag";
 import { findTest, parseQuiz, QUIZ_SYSTEM_PROMPT } from "@/lib/library/tests-hub";
+import { clientKey, QUIZ_LIMIT, rateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/quiz — practice questions generated from the corpus.
@@ -19,6 +20,14 @@ export const dynamic = "force-dynamic";
 const GEMINI = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export async function POST(request: Request): Promise<Response> {
+  const limited = rateLimit(`quiz:${clientKey(request)}`, QUIZ_LIMIT);
+  if (!limited.allowed) {
+    return Response.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "retry-after": String(limited.retryAfterSeconds) } },
+    );
+  }
+
   let body: { testId?: unknown };
   try {
     body = (await request.json()) as typeof body;
