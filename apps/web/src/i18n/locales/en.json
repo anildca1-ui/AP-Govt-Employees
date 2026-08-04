@@ -277,5 +277,20 @@
   "privacyPage": {
     "title": "Privacy Policy",
     "updated": "Last updated"
+  },
+  "notFoundPage": {
+    "title": "Page not found",
+    "body": "The page you are looking for is not here. The link may be out of date, or a GO number may have been mistyped.",
+    "tryTitle": "Try one of these",
+    "searchGos": "Search the GO library",
+    "calculators": "Calculators",
+    "chat": "Ask the AI chat",
+    "home": "Go to the home page"
+  },
+  "errorPage": {
+    "title": "Something went wrong",
+    "body": "We could not show this page just now. Please try again in a moment.",
+    "retry": "Try again",
+    "offlineNote": "The calculators run on your phone — they still work right now."
   }
 }

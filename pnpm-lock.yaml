@@ -26,6 +26,9 @@ importers:
       globals:
         specifier: ^15.15.0
         version: 15.15.0
+      playwright:
+        specifier: ^1.62.1
+        version: 1.62.1
       supabase:
         specifier: ^2.111.0
         version: 2.111.0

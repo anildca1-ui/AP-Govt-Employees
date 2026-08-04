@@ -21,6 +21,7 @@
     "db:reset": "supabase db reset",
     "db:test": "psql \"postgresql://postgres:postgres@127.0.0.1:54322/postgres\" -v ON_ERROR_STOP=1 -f supabase/tests/001_schema_smoke.sql",
     "db:schema-check": "./scripts/schema-check.sh",
+    "verify:footer": "node scripts/verify-footer.mjs",
     "eval": "pnpm --filter @ap-emp-ai/rag eval",
     "gate": "./scripts/gate.sh"
   },
@@ -31,6 +32,7 @@
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^15.15.0",
+    "playwright": "^1.62.1",
     "supabase": "^2.111.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8",
