@@ -5,6 +5,7 @@ import {
   daCommand,
   logBotChat,
   requiredEnv,
+  requiredWebhookSecret,
 } from "@/lib/bots/shared";
 import { intakeForwardedPdf, intakeReply, MAX_PDF_BYTES } from "@/lib/bots/ingest";
 import {
@@ -160,11 +161,11 @@ export async function POST(request: Request): Promise<Response> {
     let handler = cached;
     if (handler === null) {
       // The secret token is Telegram's own webhook authentication; without it
-      // anyone who learns the URL can post fabricated updates.
-      const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-      handler = webhookCallback(buildBot(), "std/http", {
-        ...(secret !== undefined && secret !== "" && { secretToken: secret }),
-      }) as WebhookHandler;
+      // anyone who learns the URL can post fabricated updates. Required, not
+      // optional — omitting it when unset would turn a missing environment
+      // variable into a silently open endpoint.
+      const secretToken = requiredWebhookSecret("TELEGRAM_WEBHOOK_SECRET");
+      handler = webhookCallback(buildBot(), "std/http", { secretToken }) as WebhookHandler;
       cached = handler;
     }
     return await handler(request);

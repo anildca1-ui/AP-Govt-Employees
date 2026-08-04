@@ -22,6 +22,32 @@ export function requiredEnv(name: string): string {
   return value;
 }
 
+/**
+ * The shared secret a bot webhook authenticates callers with, or a refusal.
+ *
+ * Both webhooks are public URLs whose only caller check is this secret. Treating
+ * an unset one as "skip the check" would mean a missing environment variable
+ * silently converts an authenticated endpoint into an open one — and the failure
+ * is invisible, because the bot keeps working perfectly for real traffic while
+ * accepting forged traffic too. A forged update can queue attacker-supplied
+ * PDFs, spend model budget, and make our own bot send messages to recipients an
+ * attacker picks.
+ *
+ * So it fails closed, the same way the scraper refuses to run without a contact
+ * address (CLAUDE.md rule 3). "is not set" in the message is what the route
+ * handlers match on to answer 500 rather than 200.
+ */
+export function requiredWebhookSecret(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(
+      `${name} is not set — refusing to accept unauthenticated webhook calls. ` +
+        `It is the only thing distinguishing a real update from a forged one.`,
+    );
+  }
+  return value;
+}
+
 /** Anon key: retrieval reads approved documents only, and RLS enforces that. */
 export function botRetrievalClient(): RetrievalDb {
   return createClient(

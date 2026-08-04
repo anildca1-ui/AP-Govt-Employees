@@ -1,4 +1,10 @@
-import { answerForBot, botServiceClient, daCommand, logBotChat } from "@/lib/bots/shared";
+import {
+  answerForBot,
+  botServiceClient,
+  daCommand,
+  logBotChat,
+  requiredWebhookSecret,
+} from "@/lib/bots/shared";
 import {
   extractMessages,
   verifySignature,
@@ -87,12 +93,22 @@ export async function POST(request: Request): Promise<Response> {
   // and re-serialising would change them and break verification.
   const rawBody = await request.text();
 
-  const appSecret = process.env.WHATSAPP_APP_SECRET;
-  if (appSecret) {
-    const signature = request.headers.get("x-hub-signature-256");
-    if (!verifySignature(rawBody, signature, appSecret)) {
-      return new Response("Invalid signature", { status: 401 });
-    }
+  // Unconditional. Verifying only when the secret happens to be configured
+  // would mean a missing environment variable turns this public URL into an
+  // open one — and nothing would look wrong, because real traffic keeps working.
+  let appSecret: string;
+  try {
+    appSecret = requiredWebhookSecret("WHATSAPP_APP_SECRET");
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 },
+    );
+  }
+
+  const signature = request.headers.get("x-hub-signature-256");
+  if (!verifySignature(rawBody, signature, appSecret)) {
+    return new Response("Invalid signature", { status: 401 });
   }
 
   let payload: unknown;
