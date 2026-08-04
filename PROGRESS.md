@@ -53,3 +53,8 @@ Append a 3-line summary after every completed task (see CLAUDE.md → Workflow).
 - Diffs the six reference sites' sitemaps/feeds against watch_seen (migration 003, verified on Postgres) and queues newly-seen URLs as leads — explicitly not documents: no sha256, and a meta note telling the reviewer to fetch the official PDF from goir/e-Gazette rather than ingest the reference page.
 - Forgiving by design: malformed feed → [], one unreachable site → that site skipped and the other five continue, per-site rate limiter honouring each site's Crawl-delay. The CLI only fails the cron when every site is unreachable, since that means a systemic fault rather than six coincidences.
 - 239 tests green. Phase 1 complete. ⚠️ Three selector files remain unverified against their live sites (sandbox cannot reach them) and the Part 5.1 review checkpoint — 20 documents checked by hand — is still owed before scaling ingestion.
+
+## 2026-08-03 — Phase 2.1 hybrid search
+- Migration 004 adds search_chunks (0.6 vector + 0.4 normalised ts_rank, approved-only) and chunks_for_go_number (punctuation-insensitive exact lookup, document order). Two index-backed CTEs fused rather than one blended sort: measured 24ms vs 192ms at 30k chunks, because ORDER BY over an expression containing <=> cannot use HNSW.
+- Superseded documents are returned, not filtered — rule 3 needs them retrievable so the answer can follow the chain and say it did. Rerank spreads across documents (max 2/doc) since five chunks of one GO can only cite one GO.
+- Verified against Postgres 16 + pgvector: 9-check SQL smoke test, EXPLAIN confirming index usage, and a column-name diff proving the SQL's 16 return columns match exactly what the TS layer reads. 255 tests green.
