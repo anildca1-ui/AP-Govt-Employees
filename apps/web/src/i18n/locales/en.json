@@ -184,5 +184,58 @@
         "description": "Claim MR or use EHS? A guided answer"
       }
     }
+  },
+  "gos": {
+    "title": "GO Library",
+    "intro": "Every approved GO — search, filter, and open the original PDF.",
+    "search": "Search a GO number or subject",
+    "dept": "Department",
+    "type": "Type",
+    "from": "From",
+    "to": "To",
+    "apply": "Filter",
+    "clear": "Clear",
+    "allDepts": "All departments",
+    "allTypes": "All types",
+    "results": "Results",
+    "noResults": "No GOs found",
+    "loadMore": "Show more",
+    "viewPdf": "Original PDF",
+    "supersededBy": "Superseded by",
+    "supersedes": "Supersedes",
+    "stillInForce": "Currently in force",
+    "notInForce": "⚠️ This GO has been superseded",
+    "summary": "Summary",
+    "askAboutThis": "Ask about this GO",
+    "issued": "Issued",
+    "empty": "The library is empty for now — GOs appear here once approved.",
+    "notConnected": "The database is not connected yet."
+  },
+  "news": {
+    "title": "News",
+    "intro": "Newly approved GOs, by topic.",
+    "all": "All",
+    "noNews": "No news yet",
+    "added": "Added"
+  },
+  "tests": {
+    "title": "Departmental Tests",
+    "intro": "Syllabus, notes, and practice questions generated from the corpus.",
+    "syllabus": "Syllabus",
+    "papers": "Papers",
+    "generateQuiz": "Generate practice questions",
+    "generating": "Generating…",
+    "question": "Question",
+    "answer": "Answer",
+    "showAnswer": "Show answer",
+    "source": "Source",
+    "quizIntro": "Questions come only from GOs in our corpus, and each one cites its source.",
+    "quizUnavailable": "Practice questions cannot be generated right now.",
+    "noCorpus": "Not enough GOs in the corpus yet."
+  },
+  "links": {
+    "title": "Quick Links",
+    "intro": "The official sites AP employees actually need.",
+    "official": "Official site"
   }
 }

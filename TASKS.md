@@ -36,10 +36,10 @@
 - [x] WhatsApp Cloud API webhook: text → RAG answer; media (PDF) → ingest_queue with thank-you reply
 
 ## Phase 5 — Content modules
-- [ ] /gos library: filters, infinite scroll, supersession chain visual, per-GO page with AI summary (Telugu)
-- [ ] /news: auto-summaries of newly approved documents, tagged (DA/PRC/Transfers/EHS/Exams)
-- [ ] /tests hub: EOT-141, GOT-88/97 syllabus pages + AI quiz generator from corpus (20 MCQs, cite source GO/rule per question)
-- [ ] /links directory (categorized, with uptime ping badge)
+- [x] /gos library: filters, infinite scroll, supersession chain visual, per-GO page with AI summary (Telugu)
+- [x] /news: auto-summaries of newly approved documents, tagged (DA/PRC/Transfers/EHS/Exams)
+- [x] /tests hub: EOT-141, GOT-88/97 syllabus pages + AI quiz generator from corpus (20 MCQs, cite source GO/rule per question)
+- [x] /links directory (categorized, with uptime ping badge)
 
 ## Phase 6 — Users & polish
 - [ ] Supabase auth (phone OTP), profile (basic pay, scale, dept, CPS/OPS), consent logging, delete-my-data

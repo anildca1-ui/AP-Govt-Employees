@@ -18,6 +18,25 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
 
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          // `const { secret, ...rest } = obj` is how you omit a key in JS, and
+          // the omitted name is unused by definition — that is the point.
+          ignoreRestSiblings: true,
+          // A leading underscore is the established way to say "required by the
+          // signature, deliberately unused" for a parameter it would be wrong
+          // to remove.
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
+
   // Workspace packages, build scripts and root tooling run on Node.
   {
     files: [
