@@ -3,6 +3,14 @@ import type { ScraperConfig } from "../config.js";
 import { RateLimiter } from "../politeness/rate-limiter.js";
 import { RobotsGate } from "../politeness/robots.js";
 import type { IngestQueue } from "../queue/ingest-queue.js";
+import {
+  inferColumns,
+  ROW_QUALITY_FLOOR,
+  rowsFromInference,
+  scoreRows,
+  type InferredColumns,
+  type TableSnapshot,
+} from "./infer.js";
 import { parseIndexRows } from "./parse.js";
 import { defaultSelectors, GOIR_BASE_URL, type GoirSelectors } from "./selectors.js";
 import type { GoIndexEntry, RawIndexRow } from "./types.js";
@@ -83,7 +91,7 @@ export async function scrapeGoir(options: ScrapeOptions): Promise<ScrapeSummary>
     await limiter.acquire();
     await page.goto(indexUrl, { waitUntil: "domcontentloaded" });
 
-    const rows = await extractRows(page, selectors);
+    const { rows } = await extractRowsResilient(page, selectors, log);
     summary.rowsSeen = rows.length;
     log(`index: ${rows.length} rows`);
 
@@ -159,6 +167,107 @@ async function downloadAndQueue({
     summary.duplicates += 1;
     log(`duplicate ${entry.goNumber} — already in ${outcome.where}`);
   }
+}
+
+/**
+ * Reads every table on the page into plain data, so column inference can run
+ * without a browser and be tested without one.
+ */
+export async function snapshotTables(page: Page): Promise<TableSnapshot[]> {
+  return page.$$eval("table", (tables) =>
+    tables.map((table) => {
+      const cellsOf = (row: Element) =>
+        Array.from(row.querySelectorAll("td, th")).map((cell) => ({
+          text: cell.textContent?.trim().replace(/\s+/g, " ") ?? "",
+          href: cell.querySelector("a")?.getAttribute("href") ?? null,
+        }));
+
+      const explicitHeader = table.querySelector("thead tr");
+      let headers = explicitHeader === null ? [] : cellsOf(explicitHeader).map((c) => c.text);
+
+      const bodyRows = Array.from(table.querySelectorAll("tbody tr"));
+      let rows = (bodyRows.length > 0 ? bodyRows : Array.from(table.querySelectorAll("tr"))).filter(
+        (row) => row !== explicitHeader,
+      );
+
+      // No <thead>, but a first row of <th> is a header row by any other name.
+      if (headers.length === 0 && rows.length > 0) {
+        const first = rows[0];
+        if (first !== undefined && first.querySelector("th") !== null && first.querySelector("td") === null) {
+          headers = cellsOf(first).map((c) => c.text);
+          rows = rows.slice(1);
+        }
+      }
+
+      return { headers, rows: rows.map((row) => ({ cells: cellsOf(row) })) };
+    }),
+  );
+}
+
+export interface ExtractOutcome {
+  rows: RawIndexRow[];
+  /** Set when the configured selectors matched nothing and inference was used. */
+  inferred: InferredColumns | null;
+}
+
+/**
+ * Gets index rows, preferring the configured selectors and falling back to
+ * inferring the columns from content.
+ *
+ * The selectors in selectors.ts were written without ever loading the page. When
+ * they are wrong they match zero rows — which looks exactly like "no GOs
+ * published", so a broken scraper reports a quiet, plausible nothing. The
+ * fallback turns that into a working crawl, and the returned mapping tells the
+ * operator which selectors to correct.
+ */
+export async function extractRowsResilient(
+  page: Page,
+  selectors: GoirSelectors,
+  log: (message: string) => void = () => {},
+): Promise<ExtractOutcome> {
+  const direct = await extractRows(page, selectors);
+  const directScore = scoreRows(direct);
+
+  if (direct.length > 0 && directScore >= ROW_QUALITY_FLOOR) {
+    return { rows: direct, inferred: null };
+  }
+
+  log(
+    direct.length === 0
+      ? "configured selectors matched no rows — inferring columns from the page content"
+      : `configured selectors matched ${direct.length} row(s) but they do not look like GO listings ` +
+        `(quality ${directScore.toFixed(2)}) — the columns are probably shifted; inferring instead`,
+  );
+
+  const tables = await snapshotTables(page);
+  let best: { inferred: InferredColumns; rows: RawIndexRow[]; score: number } | null = null;
+
+  for (const table of tables) {
+    const inferred = inferColumns(table);
+    const rows = rowsFromInference(table, inferred);
+    if (rows.length === 0) continue;
+    const score = scoreRows(rows);
+    if (best === null || score > best.score) best = { inferred, rows, score };
+  }
+
+  // Never trade good rows for worse ones: if inference cannot beat what the
+  // selectors produced, keep theirs and say so.
+  if (best === null || best.score <= directScore) {
+    if (direct.length > 0) {
+      log(`inference did not improve on the configured selectors — keeping their ${direct.length} row(s)`);
+      return { rows: direct, inferred: null };
+    }
+    log("no table on the page yielded usable rows");
+    return { rows: [], inferred: null };
+  }
+
+  for (const note of best.inferred.notes) log(`  ${note}`);
+  log(
+    `inferred ${best.rows.length} row(s), quality ${best.score.toFixed(2)} vs ` +
+      `${directScore.toFixed(2)} from the configured selectors — ` +
+      `correct src/goir/selectors.ts so the fast path works next time`,
+  );
+  return { rows: best.rows, inferred: best.inferred };
 }
 
 /**

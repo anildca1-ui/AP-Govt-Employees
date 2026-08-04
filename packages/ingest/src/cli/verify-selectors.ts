@@ -12,7 +12,8 @@
 
 import { chromium } from "playwright";
 import { loadScraperConfig } from "../config.js";
-import { extractRows } from "../goir/scrape.js";
+import { extractRows, snapshotTables } from "../goir/scrape.js";
+import { inferColumns, rowsFromInference } from "../goir/infer.js";
 import { defaultSelectors, GOIR_BASE_URL } from "../goir/selectors.js";
 import { parseIndexRows } from "../goir/parse.js";
 import { RateLimiter } from "../politeness/rate-limiter.js";
@@ -69,8 +70,51 @@ async function verify(): Promise<number> {
       console.log(`  ${key.padEnd(15)} ${String(count).padStart(4)}  ${selector}`);
     }
 
-    const rows = await extractRows(page, defaultSelectors);
-    console.log(`\nextracted ${rows.length} row(s) with a link\n`);
+    let rows = await extractRows(page, defaultSelectors);
+    console.log(`\nextracted ${rows.length} row(s) with a link via the configured selectors`);
+
+    if (rows.length === 0) {
+      // One run should be enough to fix this, so print everything a correction
+      // needs: what the page actually contains, and what inference made of it.
+      console.log("\nfalling back to inferring the columns from content");
+      console.log("─".repeat(60));
+
+      const tables = await snapshotTables(page);
+      console.log(`${tables.length} table(s) on the page`);
+
+      let best: { inferred: ReturnType<typeof inferColumns>; rows: typeof rows } | null = null;
+
+      tables.forEach((table, index) => {
+        const inferred = inferColumns(table);
+        const candidate = rowsFromInference(table, inferred);
+        console.log(
+          `\ntable ${index}: ${table.rows.length} row(s), ` +
+            `${table.headers.length} header cell(s), confidence ${inferred.confidence.toFixed(2)}`,
+        );
+        if (table.headers.length > 0) console.log(`  headers: ${JSON.stringify(table.headers)}`);
+        for (const note of inferred.notes) console.log(`  ${note}`);
+        if (table.rows[0] !== undefined) {
+          console.log(`  first row: ${JSON.stringify(table.rows[0].cells)}`);
+        }
+        if (candidate.length > 0 && (best === null || inferred.confidence > best.inferred.confidence)) {
+          best = { inferred, rows: candidate };
+        }
+      });
+
+      if (best !== null) {
+        const found = best as { inferred: ReturnType<typeof inferColumns>; rows: typeof rows };
+        rows = found.rows;
+        console.log(`\ninference recovered ${rows.length} row(s).`);
+        console.log(
+          "The crawl would work on this, but correct src/goir/selectors.ts anyway — " +
+            "positional selectors are the fast path and the record of the real markup.",
+        );
+      } else {
+        console.log("\nNo table yielded usable rows. Paste the output above to correct the selectors.");
+      }
+    }
+
+    console.log("");
     for (const row of rows.slice(0, 5)) console.log(row);
 
     const { entries, skipped } = parseIndexRows(rows, {
