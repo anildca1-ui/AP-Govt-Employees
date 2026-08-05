@@ -165,6 +165,28 @@ the page layout. It downloads nothing.
 > collector touches, and it is how an administrator contacts you instead of
 > blocking your server. The collector refuses to run without one.
 
+### Making them searchable
+
+Approving a GO puts it in the library. One more step makes the AI chat able to
+find and quote it:
+
+```
+pnpm --filter @ap-emp-ai/ingest index:documents
+```
+
+Run it after a batch of approvals. It is safe to run any time — it skips
+everything already done, so a run that stops halfway costs nothing.
+
+You will not normally run this yourself. The nightly job does it automatically
+after each crawl. It is here because the first batch you approve by hand will
+otherwise sit in the library unsearchable until the next night, and that looks
+like the chat is broken when it is not.
+
+> **Why it is a separate step.** Turning a GO into something searchable costs a
+> fraction of a rupee per document and takes a few seconds. Doing it inside the
+> approve button would make every approval slow, and a batch of three hundred
+> unbearable.
+
 ---
 
 ## Step 7 — Switch on the AI chat

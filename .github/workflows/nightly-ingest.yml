@@ -13,13 +13,18 @@ concurrency:
 
 jobs:
   ingest:
-    name: scrape goir · e-Gazette · Finance · discovery
+    name: scrape goir · e-Gazette · Finance · discovery · index
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
       SCRAPER_CONTACT_EMAIL: ${{ secrets.SCRAPER_CONTACT_EMAIL }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # Indexing needs whichever embedding provider is configured; absent, the
+      # indexing step below reports that and the crawl still runs.
+      EMBEDDING_PROVIDER: ${{ secrets.EMBEDDING_PROVIDER }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      DEEPINFRA_API_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
     steps:
       # Until the repository has secrets, this workflow should be green-and-
       # skipped rather than red every night: a failing scheduled job that nobody
@@ -72,3 +77,11 @@ jobs:
       - if: steps.guard.outputs.configured == 'true' && !cancelled()
         name: Reference-site discovery diff
         run: pnpm --filter @ap-emp-ai/ingest watch:diff
+
+      # Approving a GO makes it visible in the library; this is what makes it
+      # findable by the chat. Runs last, and after a failed crawl too: documents
+      # approved since the previous run still need indexing regardless of
+      # whether tonight's crawl found anything new.
+      - if: steps.guard.outputs.configured == 'true' && !cancelled()
+        name: Index approved documents for search
+        run: pnpm --filter @ap-emp-ai/ingest index:documents

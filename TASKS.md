@@ -14,6 +14,10 @@
 - [x] PDF pipeline: pdf-parse text extraction; scanned-detection; OCR fallback interface (stub Surya; vision-LLM fallback via Gemini)
 - [x] Metadata extractor: vision-LLM prompt → {go_number, go_type, dept, date, subject, subject_te, supersedes[]} with confidence; low-confidence → flag for review
 - [x] Dedupe by sha256; chunker (by section, header metadata attached); embedder; writer to chunks
+      (the four stages were built and tested separately but never joined — nothing turned an
+      approved GO into chunks, so the chat could never find one. Joined in
+      packages/ingest/src/pipeline/index-document.ts, run in bulk by `index:documents`
+      and nightly by the ingest workflow)
 - [x] Admin review queue UI (/admin): approve/edit/reject, supersession linker
 - [x] Nightly cron (Vercel cron or GH Action) for scraper A; scraper B (e-Gazette) + C (Finance circulars)
 - [x] Sitemap/RSS diff watcher for the 6 reference sites → discovery list → fetch official PDF
