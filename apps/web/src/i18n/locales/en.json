@@ -31,7 +31,12 @@
       "chatBody": "Ask your question — get an answer with the GO number, date and PDF link.",
       "daTitle": "DA arrears calculator",
       "daBody": "Enter your basic pay and the period — get a month-wise arrears table."
-    }
+    },
+    "open": "Open",
+    "liveNow": "Available now",
+    "needsGos": "Once GOs are added",
+    "allCalculators": "See all 13 calculators",
+    "noSetupNote": "The calculators run on your phone — no account needed, and nothing you type is sent anywhere."
   },
   "common": {
     "comingSoon": "Coming soon"
