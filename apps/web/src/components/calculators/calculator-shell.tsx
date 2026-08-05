@@ -31,6 +31,12 @@ export interface CalcOutcome {
   shareText: string;
   sourceGos: string[];
   unverified: boolean;
+  /**
+   * A caveat about the figure itself rather than about the rate behind it.
+   * Separate from `unverified`, which is about our data: this is about what the
+   * GO says happens next, and it stays true even once every rate is checked.
+   */
+  note?: string;
 }
 
 export interface CalculatorShellProps {
@@ -180,6 +186,12 @@ function CalculatorShellInner({ title, description, fields, dict, compute }: Cal
           {outcome.unverified && (
             <p className="rounded border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">
               {dict.calculators.unverifiedWarning}
+            </p>
+          )}
+
+          {outcome.note !== undefined && (
+            <p className="rounded border border-slate-200 bg-slate-50 p-2 text-xs text-slate-700">
+              {outcome.note}
             </p>
           )}
 

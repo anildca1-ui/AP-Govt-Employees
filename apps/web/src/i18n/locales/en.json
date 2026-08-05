@@ -128,6 +128,7 @@
     "difference": "Difference",
     "asPer": "Source",
     "unverifiedWarning": "⚠️ These rates have not yet been checked against the GO. Verify with the original GO.",
+    "payoutTimingNote": "ℹ️ Check the GO for when this amount is actually paid. Some DA orders defer arrears to retirement or credit them to GPF rather than paying cash now.",
     "clientSide": "This runs entirely on your device — nothing you type is sent anywhere.",
     "comingSoon": "Coming soon",
     "items": {

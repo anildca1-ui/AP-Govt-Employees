@@ -113,6 +113,10 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         shareText: `${dict.calculators.total}: ${formatINR(result.total)} (${result.months.length} months)`,
         sourceGos: result.sourceGos,
         unverified: result.unverified,
+        // A total with no timing reads as money arriving shortly. DA orders
+        // frequently defer arrears to retirement or route them to GPF instead,
+        // and this figure is the one people forward to each other.
+        note: dict.calculators.payoutTimingNote,
       };
     },
   }),
