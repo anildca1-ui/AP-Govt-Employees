@@ -79,10 +79,56 @@ const DOCS = [
 
 const RATES = [];
 
+/** Documents waiting for approval, as the admin review queue sees them. */
+const QUEUE = [
+  {
+    id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    source: "goir",
+    raw_url: "https://example.invalid/sample-fin-ms-62.pdf",
+    file_path: "./.ingest/sample-fin-ms-62.pdf",
+    sha256: "sample-queue-1",
+    status: "pending",
+    error: null,
+    meta: {
+      go_number: "G.O.Ms.No.62",
+      go_type: "Ms",
+      dept: "Finance",
+      issue_date: "2025-10-22",
+      subject: "SAMPLE — Dearness Allowance to pensioners, consequential revision of pension",
+      bytes: 184320,
+      confidence: 0.93,
+    },
+    created_at: "2025-10-23T02:15:00Z",
+  },
+  {
+    id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    source: "whatsapp",
+    raw_url: null,
+    file_path: "./.ingest/sample-forwarded.pdf",
+    sha256: "sample-queue-2",
+    status: "pending",
+    error: null,
+    // Low confidence, so the reviewer should see it flagged rather than trusted.
+    meta: {
+      go_number: null,
+      go_type: null,
+      dept: null,
+      issue_date: null,
+      subject: "SAMPLE — forwarded by an employee, metadata not read with confidence",
+      bytes: 92160,
+      confidence: 0.31,
+      needs_review: true,
+      review_reasons: ["forwarded by a member of the public, source unverified"],
+    },
+    created_at: "2025-10-23T05:40:00Z",
+  },
+];
+
 function rowsFor(path) {
   if (MODE === "empty") return [];
   if (path.startsWith("/rest/v1/documents")) return DOCS;
   if (path.startsWith("/rest/v1/rates")) return RATES;
+  if (path.startsWith("/rest/v1/ingest_queue")) return QUEUE;
   return [];
 }
 

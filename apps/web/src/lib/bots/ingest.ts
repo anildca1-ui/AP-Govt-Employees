@@ -79,6 +79,13 @@ export async function intakeForwardedPdf(
       // Kept so a reviewer can weigh who sent it; never shown publicly.
       forwarded_by: doc.from,
       bytes: doc.bytes.byteLength,
+      // A stranger's forward is the least trustworthy input this system takes:
+      // anyone can send anything. Without this flag the review queue renders it
+      // identically to a document the scraper pulled from goir.ap.gov.in and the
+      // extractor read confidently, so the warning below would sit in the data
+      // exactly where the reviewer cannot see it.
+      needs_review: true,
+      review_reasons: ["forwarded by a member of the public, source unverified"],
       note: "Forwarded to a bot by a member of the public — verify against the official source before approving.",
     },
   });

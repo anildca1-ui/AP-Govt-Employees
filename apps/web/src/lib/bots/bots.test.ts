@@ -83,6 +83,10 @@ describe("intakeForwardedPdf", () => {
       const meta = state.inserted[0]?.meta as Record<string, unknown>;
       expect(String(meta.note)).toMatch(/verify against the official source/i);
       expect(meta.forwarded_by).toBe("12345");
+      // The note alone is not enough: the review queue lists documents by their
+      // needs_review flag, so without it a stranger's forward renders exactly
+      // like a document the scraper fetched from goir.ap.gov.in.
+      expect(meta.needs_review).toBe(true);
     });
   });
 
