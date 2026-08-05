@@ -1,0 +1,113 @@
+{
+  "_readme": [
+    "Direct addresses of Government Order PDFs, for the first load of the library.",
+    "",
+    "Why this exists: the goir.ap.gov.in collector has to drive a search page whose",
+    "markup nobody has verified. These are links straight to the PDFs, so a first",
+    "batch can be collected without depending on that. Both paths end in the same",
+    "review queue.",
+    "",
+    "IMPORTANT — `claim` is NOT data. It is what a web search said about the",
+    "document, recorded so a reviewer knows what to expect when the PDF opens. Every",
+    "field that reaches the library is read from the PDF itself by the extractor,",
+    "and an administrator approves it before anything is published. If the PDF",
+    "disagrees with the claim here, the PDF is right and this file is wrong.",
+    "",
+    "Add to it freely. `pnpm --filter @ap-emp-ai/ingest fetch:seeds` downloads",
+    "everything listed, skips what is already known by content hash, and queues the",
+    "rest. Re-running is safe."
+  ],
+
+  "documents": [
+    {
+      "url": "https://www.aputf.org/wp-content/uploads/2025/10/2025FIN_MS60_E.pdf",
+      "claim": "G.O.Ms.No.60, Finance, 20-10-2025 — DA 33.67% to 37.31% w.e.f. 01-01-2024",
+      "topic": "DA"
+    },
+    {
+      "url": "https://www.aputf.org/wp-content/uploads/2024/03/G-O-MS-No-28-Dt.-15.03.2024.pdf",
+      "claim": "G.O.Ms.No.28, 15-03-2024 — DA 22.75% to 26.39% w.e.f. 01-07-2022",
+      "topic": "DA"
+    },
+    {
+      "url": "https://www.aputf.org/wp-content/uploads/2024/03/G-O-MS-No-30-Dt.15.03.2024.pdf",
+      "claim": "G.O.Ms.No.30, 15-03-2024 — DA arrears 01-07-2023 to 30-06-2024 in three instalments",
+      "topic": "DA arrears"
+    },
+    {
+      "url": "https://www.aputf.org/wp-content/uploads/2022/06/GO-Ms-No.101-Dt.11.05.2022.pdf",
+      "claim": "G.O.Ms.No.101, 11-05-2022 — 11th PRC, Revised Pay Scales 2022, allowances",
+      "topic": "PRC 2022"
+    },
+    {
+      "url": "https://www.aputf.org/wp-content/uploads/2022/06/GO-Ms-No.103-Dt.11.05.2022.pdf",
+      "claim": "G.O.Ms.No.103, 11-05-2022 — 11th PRC, recovery of interim relief",
+      "topic": "PRC 2022"
+    },
+    {
+      "url": "https://www.aputf.org/wp-content/uploads/2022/10/G.O.Ms_.No_.160-Dt.30.09.2022.pdf",
+      "claim": "G.O.Ms.No.160, 30-09-2022 — tuition fee reimbursement, NGOs and Last Grade Service",
+      "topic": "Allowances"
+    },
+    {
+      "url": "https://www.aputf.org/wp-content/uploads/2023/10/GO-MS-NO-113-Dated-21-10-2023.pdf",
+      "claim": "G.O.Ms.No.113, 21-10-2023",
+      "topic": "Pay"
+    },
+    {
+      "url": "https://www.aputf.org/wp-content/uploads/2025/10/2025FIN_MS65.pdf",
+      "claim": "G.O.Ms.No.65, 2025 — AP State Employees Group Insurance",
+      "topic": "Insurance"
+    },
+    {
+      "url": "https://apfinance.gov.in/downloads/prc_circular_26012022.pdf",
+      "claim": "Finance circular, 26-01-2022 — implementation of 11th PRC, Revised Pay Scales 2022",
+      "topic": "PRC 2022"
+    },
+    {
+      "url": "https://cag.gov.in/uploads/media/AP-adoption-of-revised-pay-scales-062d1178fec6977-49873733.pdf",
+      "claim": "Adoption of Revised Pay Scales 2022 w.e.f. 01-07-2018",
+      "topic": "PRC 2022"
+    },
+    {
+      "url": "https://cag.gov.in/uploads/media/Revised-pay-scales-2022-interim-relief-063183763cc0f30-16178810.pdf",
+      "claim": "Revised Pay Scales 2022 — adjustment of interim relief",
+      "topic": "PRC 2022"
+    },
+    {
+      "url": "https://cag.gov.in/uploads/media/Govt-of-Andhra-Pradesh-06613c5e21a6393-28253344.pdf",
+      "claim": "Revision of Pay Scales 2022 for retired employees",
+      "topic": "Pension"
+    },
+    {
+      "url": "https://cag.gov.in/uploads/media/GOMs61-0694140fd00fe75-91392326.pdf",
+      "claim": "G.O.Ms.No.61, 20-10-2025 — Dearness Relief to pensioners, 3.64% w.e.f. 01-01-2024",
+      "topic": "Pension"
+    },
+    {
+      "url": "https://cag.gov.in/uploads/media/GOMsNO63-069414112c38306-14495259.pdf",
+      "claim": "G.O.Ms.No.63",
+      "topic": "Unknown"
+    },
+    {
+      "url": "https://cag.gov.in/uploads/media/Govt-of-Andhra-Pradesh-06646f67a9e0853-19090683.pdf",
+      "claim": "Dearness Relief to judicial pensioners and family pensioners",
+      "topic": "Pension"
+    }
+  ],
+
+  "_indexPages": [
+    {
+      "url": "https://www.aputf.org/gos/latest-gos/",
+      "note": "Teachers' federation listing of recent GOs, linking the PDFs directly."
+    },
+    {
+      "url": "https://cag.gov.in/ae/andhra-pradesh/en/page-ae-andhra-pradesh-andhra-pradesh-go-s",
+      "note": "Accountant General (A&E) Andhra Pradesh — GO listing on a Government of India domain."
+    },
+    {
+      "url": "https://apfinance.gov.in/11thprc.html",
+      "note": "AP Finance Department's own 11th PRC page. Official domain; the best target once the collector handles it."
+    }
+  ]
+}

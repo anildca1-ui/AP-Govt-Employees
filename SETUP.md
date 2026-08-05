@@ -146,8 +146,19 @@ Two ways in, and you can use both.
 appears in the library. Nothing is published without your approval — that rule
 is enforced by the database, not by the code.
 
-**Automatically.** Put a real email address you actually read into
-`SCRAPER_CONTACT_EMAIL`, then:
+**From the starter list.** A list of Government Order PDFs is already prepared
+in `config/go-sources.json` — DA orders, the 2022 pay revision, pension
+revisions. Put a real email address you read into `SCRAPER_CONTACT_EMAIL`, then:
+
+```
+pnpm --filter @ap-emp-ai/ingest fetch:seeds
+```
+
+It downloads each one into your review queue. Everything shown in the library
+still comes from the PDF itself and still needs your approval — the notes in
+that file are only hints about what each document should turn out to be.
+
+**From the GO website.** Put the same email in place, then:
 
 ```
 pnpm --filter @ap-emp-ai/ingest verify:selectors

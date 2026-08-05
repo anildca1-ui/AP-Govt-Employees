@@ -20,6 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "verify:selectors": "pnpm build && node --env-file-if-exists=../../.env dist/cli/verify-selectors.js",
     "index:documents": "pnpm build && node --env-file-if-exists=../../.env dist/cli/index-documents.js",
+    "fetch:seeds": "pnpm build && node --env-file-if-exists=../../.env dist/cli/fetch-seeds.js",
     "scrape:goir": "pnpm build && node --env-file-if-exists=../../.env dist/cli/scrape-goir.js",
     "scrape:gazette": "pnpm build && node --env-file-if-exists=../../.env dist/cli/scrape-gazette.js",
     "scrape:finance": "pnpm build && node --env-file-if-exists=../../.env dist/cli/scrape-finance.js",
