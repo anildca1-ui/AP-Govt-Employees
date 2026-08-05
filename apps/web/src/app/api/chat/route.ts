@@ -50,7 +50,11 @@ async function embedQuestion(text: string): Promise<number[] | null> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
 
-  const response = await fetch("https://api.openai.com/v1/embeddings", {
+  // Overridable for the same reason as GEMINI_BASE_URL: it lets the retrieval
+  // path be exercised without buying embeddings, and lets a deployment point at
+  // a proxy or a compatible provider without a code change.
+  const base = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
+  const response = await fetch(`${base}/embeddings`, {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({

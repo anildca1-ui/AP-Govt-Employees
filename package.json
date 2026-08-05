@@ -24,6 +24,7 @@
     "db:schema-check": "./scripts/schema-check.sh",
     "verify:footer": "node scripts/verify-footer.mjs",
     "dev:fake-db": "node scripts/fake-supabase.mjs",
+    "dev:fake-models": "node scripts/fake-model-apis.mjs",
     "eval": "pnpm --filter @ap-emp-ai/rag eval",
     "gate": "./scripts/gate.sh"
   },

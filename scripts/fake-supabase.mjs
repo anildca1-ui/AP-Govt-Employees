@@ -132,8 +132,64 @@ function rowsFor(path) {
   return [];
 }
 
+/** Chunks the retrieval RPCs return, shaped as search_chunks does. */
+const CHUNKS = [
+  {
+    chunk_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    document_id: "11111111-1111-4111-8111-111111111111",
+    content:
+      "SAMPLE — Government hereby order enhancement of the Dearness Allowance to State Government Employees from 33.67% to 37.31% of basic pay with effect from 1st January 2024.",
+    page: 1,
+    score: 0.91,
+    go_number: "G.O.Ms.No.60",
+    go_type: "Ms",
+    dept: "Finance",
+    issue_date: "2025-10-20",
+    subject: "SAMPLE — Dearness Allowance enhanced to 37.31%",
+    pdf_url: "https://example.invalid/sample-60.pdf",
+    superseded_by: null,
+  },
+];
+
 createServer((req, res) => {
   const url = new URL(req.url, "http://localhost");
+
+  // Inserts (chat_logs, ingest_queue) — echo back a row with an id, which is
+  // what PostgREST returns under Prefer: return=representation. The chat needs
+  // that id: it is what a thumbs-up would later be attached to, and the UI
+  // withholds the feedback buttons without one.
+  if (req.method === "POST" && !url.pathname.startsWith("/rest/v1/rpc/")) {
+    let body = "";
+    req.on("data", (c) => (body += c));
+    req.on("end", () => {
+      let rows = [];
+      try {
+        const parsed = JSON.parse(body || "{}");
+        rows = (Array.isArray(parsed) ? parsed : [parsed]).map((row, i) => ({
+          id: `feedcafe-0000-4000-8000-00000000000${i}`,
+          created_at: "2025-10-23T06:00:00Z",
+          ...row,
+        }));
+      } catch {
+        rows = [{ id: "feedcafe-0000-4000-8000-000000000000" }];
+      }
+      const single = (req.headers.accept ?? "").includes("vnd.pgrst.object");
+      res.writeHead(201, { "content-type": "application/json; charset=utf-8" });
+      res.end(JSON.stringify(single ? rows[0] : rows));
+    });
+    return;
+  }
+
+  // POST /rest/v1/rpc/<fn> — retrieval. Body is ignored; the fixture stands in
+  // for whatever the query would have matched.
+  if (url.pathname.startsWith("/rest/v1/rpc/")) {
+    req.resume();
+    req.on("end", () => {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(MODE === "empty" ? [] : CHUNKS));
+    });
+    return;
+  }
   let rows = rowsFor(url.pathname);
 
   // PostgREST filters live in the query string as column=op.value. Only the

@@ -16,7 +16,13 @@ export interface StreamAnswerOptions {
 
 export const DEFAULT_ANSWER_MODEL = "gemini-2.5-flash";
 
-const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+/**
+ * Overridable so the answer path can be exercised without calling Google — and
+ * so a deployment behind a corporate proxy or a regional endpoint does not need
+ * a code change. Unset, it is the real API.
+ */
+const API_BASE =
+  process.env.GEMINI_BASE_URL ?? "https://generativelanguage.googleapis.com/v1beta/models";
 
 /**
  * Yields answer text as it arrives.
