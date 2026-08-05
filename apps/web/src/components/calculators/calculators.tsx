@@ -57,6 +57,39 @@ type Builder = (dict: Dictionary) => {
   compute: (values: Record<string, string>) => CalcOutcome;
 };
 
+/**
+ * Field and result labels for the calculators.
+ *
+ * These were hardcoded English for eleven of the thirteen, so a Telugu reader
+ * saw "Taxable income" and "Monthly pension" on a Telugu-first page — the one
+ * promise this portal makes to the people it is for (CLAUDE.md rule 5).
+ */
+const L = (dict: Dictionary) => dict.calculators.labels;
+
+/**
+ * Labels one line of the salary breakdown in the reader's language.
+ *
+ * calculateSalary returns a language-neutral `key` plus an English `label`; the
+ * percentage is re-attached here so "DA @ 37.31%" reads as "డీఏ @ 37.31%"
+ * rather than being translated into a fixed string that loses the rate.
+ */
+function breakdownLabel(
+  dict: Dictionary,
+  row: { key: string; label: string; percent?: number },
+): string {
+  const labels = L(dict);
+  if (row.key === "basicPay") return labels.basicPay;
+  if (row.key === "cca") return labels.cca;
+  if (row.key === "da" || row.key === "hra") {
+    const name = row.key === "da" ? labels.da : labels.hra;
+    return row.percent === undefined ? name : `${name} @ ${row.percent}%`;
+  }
+  // Deduction rows carry the component's own name (GPF, APGLI, GIS, PT), which
+  // is an abbreviation used as-is in Telugu — only the minus sign is ours.
+  if (row.key.startsWith("deduction:")) return `− ${row.key.slice("deduction:".length)}`;
+  return row.label;
+}
+
 const BUILDERS: Record<CalculatorId, Builder> = {
   "da-arrears": (dict) => ({
     fields: [
@@ -125,11 +158,11 @@ const BUILDERS: Record<CalculatorId, Builder> = {
     fields: [
       { name: "basicPay", label: dict.calculators.basicPay, defaultValue: "52590", required: true },
       { name: "hraPercent", label: dict.calculators.hraPercent, defaultValue: "16", step: "0.01" },
-      { name: "cca", label: "CCA", defaultValue: "0" },
-      { name: "pf", label: "GPF / CPS", defaultValue: "0" },
-      { name: "apgli", label: "APGLI", defaultValue: "0" },
-      { name: "gis", label: "GIS", defaultValue: "0" },
-      { name: "pt", label: "PT", defaultValue: "0" },
+      { name: "cca", label: L(dict).cca, defaultValue: "0" },
+      { name: "pf", label: L(dict).gpfCps, defaultValue: "0" },
+      { name: "apgli", label: L(dict).apgli, defaultValue: "0" },
+      { name: "gis", label: L(dict).gis, defaultValue: "0" },
+      { name: "pt", label: L(dict).pt, defaultValue: "0" },
     ],
     compute: (v) => {
       const result = calculateSalary(
@@ -152,10 +185,10 @@ const BUILDERS: Record<CalculatorId, Builder> = {
           <Rows
             rows={[
               ...result.breakdown.map(
-                (row) => [row.label, formatINR(row.amount)] as [string, string],
+                (row) => [breakdownLabel(dict, row), formatINR(row.amount)] as [string, string],
               ),
               ["—", "—"],
-              ["Net", formatINR(result.net)],
+              [L(dict).net, formatINR(result.net)],
             ]}
           />
         ),
@@ -176,9 +209,9 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              ["Present basic", formatINR(result.currentBasic)],
-              ["After increment", formatINR(result.newBasic)],
-              ["Increment", formatINR(result.incrementAmount)],
+              [L(dict).presentBasic, formatINR(result.currentBasic)],
+              [L(dict).afterIncrement, formatINR(result.newBasic)],
+              [L(dict).increment, formatINR(result.incrementAmount)],
             ]}
           />
         ),
@@ -192,15 +225,15 @@ const BUILDERS: Record<CalculatorId, Builder> = {
   fixation: (dict) => ({
     fields: [
       { name: "basicPay", label: dict.calculators.basicPay, defaultValue: "20000", required: true },
-      { name: "promotionMin", label: "Promotion scale minimum", defaultValue: "" },
+      { name: "promotionMin", label: L(dict).promotionMin, defaultValue: "" },
       {
         name: "notional",
-        label: "Notional increment",
+        label: L(dict).notionalIncrement,
         type: "select",
         defaultValue: "yes",
         options: [
-          { value: "yes", label: "Yes" },
-          { value: "no", label: "No" },
+          { value: "yes", label: L(dict).yes },
+          { value: "no", label: L(dict).no },
         ],
       },
     ],
@@ -218,7 +251,7 @@ const BUILDERS: Record<CalculatorId, Builder> = {
       return {
         body: (
           <div className="space-y-2">
-            <Rows rows={[["Fixed at", formatINR(result.fixedBasic)]]} />
+            <Rows rows={[[L(dict).fixedAt, formatINR(result.fixedBasic)]]} />
             <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-600">
               {result.steps.map((step) => (
                 <li key={step}>{step}</li>
@@ -236,9 +269,9 @@ const BUILDERS: Record<CalculatorId, Builder> = {
   nps: (dict) => ({
     fields: [
       { name: "basicPay", label: dict.calculators.basicPay, defaultValue: "52590", required: true },
-      { name: "years", label: "Years to retirement", defaultValue: "20" },
-      { name: "returnPct", label: "Expected return %", defaultValue: "8", step: "0.1" },
-      { name: "growthPct", label: "Annual pay growth %", defaultValue: "3", step: "0.1" },
+      { name: "years", label: L(dict).yearsToRetire, defaultValue: "20" },
+      { name: "returnPct", label: L(dict).expectedReturn, defaultValue: "8", step: "0.1" },
+      { name: "growthPct", label: L(dict).payGrowth, defaultValue: "3", step: "0.1" },
     ],
     compute: (v) => {
       const da = rateOn(ratesFor<{ percent: number }>("DA"), "DA", today());
@@ -262,11 +295,11 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              ["Employee / month", formatINR(result.monthlyEmployee)],
-              ["Government / month", formatINR(result.monthlyGovernment)],
-              ["Total contributed", formatINR(result.totalContributed)],
-              ["Growth", formatINR(result.growth)],
-              ["Projected corpus", formatINR(result.projectedCorpus)],
+              [L(dict).employeePerMonth, formatINR(result.monthlyEmployee)],
+              [L(dict).govtPerMonth, formatINR(result.monthlyGovernment)],
+              [L(dict).totalContributed, formatINR(result.totalContributed)],
+              [L(dict).growth, formatINR(result.growth)],
+              [L(dict).projectedCorpus, formatINR(result.projectedCorpus)],
             ]}
           />
         ),
@@ -279,12 +312,12 @@ const BUILDERS: Record<CalculatorId, Builder> = {
     },
   }),
 
-  gps: () => ({
+  gps: (dict) => ({
     fields: [
-      { name: "lastBasic", label: "Last basic pay", defaultValue: "100000", required: true },
-      { name: "assured", label: "Assured %", defaultValue: "50", step: "0.1" },
-      { name: "corpus", label: "CPS corpus (optional)", defaultValue: "" },
-      { name: "annuity", label: "Annuity rate %", defaultValue: "6", step: "0.1" },
+      { name: "lastBasic", label: L(dict).lastBasicPay, defaultValue: "100000", required: true },
+      { name: "assured", label: L(dict).assuredPct, defaultValue: "50", step: "0.1" },
+      { name: "corpus", label: L(dict).cpsCorpus, defaultValue: "" },
+      { name: "annuity", label: L(dict).annuityRate, defaultValue: "6", step: "0.1" },
     ],
     compute: (v) => {
       const corpus = v.corpus === "" ? undefined : num(v, "corpus");
@@ -298,12 +331,12 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              ["GPS assured pension", formatINR(result.assuredMonthlyPension)],
+              [L(dict).gpsAssured, formatINR(result.assuredMonthlyPension)],
               ...(result.cpsMonthlyPension === null
                 ? []
                 : ([
-                    ["CPS annuity estimate", formatINR(result.cpsMonthlyPension)],
-                    ["Difference", formatINR(result.difference ?? 0)],
+                    [L(dict).cpsAnnuity, formatINR(result.cpsMonthlyPension)],
+                    [L(dict).difference, formatINR(result.difference ?? 0)],
                   ] as [string, string][])),
             ]}
           />
@@ -316,14 +349,14 @@ const BUILDERS: Record<CalculatorId, Builder> = {
     },
   }),
 
-  "ops-pension": () => ({
+  "ops-pension": (dict) => ({
     fields: [
-      { name: "lastPay", label: "Last pay", defaultValue: "100000", required: true },
-      { name: "years", label: "Qualifying service (years)", defaultValue: "25" },
-      { name: "fullYears", label: "Years for full pension", defaultValue: "20" },
-      { name: "pensionPct", label: "Pension % of last pay", defaultValue: "50", step: "0.1" },
-      { name: "commutePct", label: "Commutation % (optional)", defaultValue: "" },
-      { name: "factor", label: "Commutation factor (optional)", defaultValue: "", step: "0.01" },
+      { name: "lastPay", label: L(dict).lastPay, defaultValue: "100000", required: true },
+      { name: "years", label: L(dict).qualifyingService, defaultValue: "25" },
+      { name: "fullYears", label: L(dict).yearsFullPension, defaultValue: "20" },
+      { name: "pensionPct", label: L(dict).pensionPctOfPay, defaultValue: "50", step: "0.1" },
+      { name: "commutePct", label: L(dict).commutePct, defaultValue: "" },
+      { name: "factor", label: L(dict).commuteFactor, defaultValue: "", step: "0.01" },
     ],
     compute: (v) => {
       const commutePct = v.commutePct === "" ? undefined : num(v, "commutePct");
@@ -341,12 +374,12 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              ["Monthly pension", formatINR(result.monthlyPension)],
+              [L(dict).monthlyPension, formatINR(result.monthlyPension)],
               ...(result.commutedLumpSum === null
                 ? []
                 : ([
-                    ["Commuted lump sum", formatINR(result.commutedLumpSum)],
-                    ["Residual pension", formatINR(result.residualPension ?? 0)],
+                    [L(dict).commutedLumpSum, formatINR(result.commutedLumpSum)],
+                    [L(dict).residualPension, formatINR(result.residualPension ?? 0)],
                   ] as [string, string][])),
             ]}
           />
@@ -360,9 +393,9 @@ const BUILDERS: Record<CalculatorId, Builder> = {
 
   gratuity: (dict) => ({
     fields: [
-      { name: "lastBasic", label: "Last basic pay", defaultValue: "100000", required: true },
-      { name: "years", label: "Qualifying service (years)", defaultValue: "33" },
-      { name: "ceiling", label: "Ceiling (optional)", defaultValue: "" },
+      { name: "lastBasic", label: L(dict).lastBasicPay, defaultValue: "100000", required: true },
+      { name: "years", label: L(dict).qualifyingService, defaultValue: "33" },
+      { name: "ceiling", label: L(dict).ceiling, defaultValue: "" },
     ],
     compute: (v) => {
       const da = rateOn(ratesFor<{ percent: number }>("DA"), "DA", today());
@@ -378,8 +411,8 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              ["Emoluments (basic + DA)", formatINR(result.emoluments)],
-              ["Half-months earned", String(result.halfMonthsEarned)],
+              [L(dict).emoluments, formatINR(result.emoluments)],
+              [L(dict).halfMonthsEarned, String(result.halfMonthsEarned)],
               [dict.calculators.total, formatINR(result.payable)],
             ]}
           />
@@ -394,8 +427,8 @@ const BUILDERS: Record<CalculatorId, Builder> = {
   "leave-encashment": (dict) => ({
     fields: [
       { name: "basicPay", label: dict.calculators.basicPay, defaultValue: "100000", required: true },
-      { name: "days", label: "Days", defaultValue: "300" },
-      { name: "maxDays", label: "Maximum days (optional)", defaultValue: "300" },
+      { name: "days", label: L(dict).days, defaultValue: "300" },
+      { name: "maxDays", label: L(dict).maxDays, defaultValue: "300" },
     ],
     compute: (v) => {
       const da = rateOn(ratesFor<{ percent: number }>("DA"), "DA", today());
@@ -411,8 +444,8 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              ["Per day", formatINR(result.perDay)],
-              ["Days paid", String(result.daysPaid)],
+              [L(dict).perDay, formatINR(result.perDay)],
+              [L(dict).daysPaid, String(result.daysPaid)],
               [dict.calculators.total, formatINR(result.amount)],
             ]}
           />
@@ -424,19 +457,19 @@ const BUILDERS: Record<CalculatorId, Builder> = {
     },
   }),
 
-  "income-tax": () => ({
+  "income-tax": (dict) => ({
     fields: [
       {
         name: "fy",
-        label: "Financial year",
+        label: L(dict).financialYear,
         type: "select",
         defaultValue: latestTaxYear()?.value ?? "",
         options: taxYearOptions(),
       },
-      { name: "gross", label: "Gross annual salary", defaultValue: "1200000", required: true },
-      { name: "s80c", label: "80C (old regime)", defaultValue: "150000" },
-      { name: "s80d", label: "80D (old regime)", defaultValue: "25000" },
-      { name: "hra", label: "HRA exemption (old regime)", defaultValue: "0" },
+      { name: "gross", label: L(dict).grossAnnual, defaultValue: "1200000", required: true },
+      { name: "s80c", label: L(dict).s80c, defaultValue: "150000" },
+      { name: "s80d", label: L(dict).s80d, defaultValue: "25000" },
+      { name: "hra", label: L(dict).hraExempt, defaultValue: "0" },
     ],
     compute: (v) => {
       // Chosen by financial year, not by today's date. Tax is computed FOR a
@@ -496,11 +529,11 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              ["Taxable income", formatINR(result.new.taxableIncome)],
-              ["Tax on slabs", formatINR(result.new.slabTax)],
-              ["Rebate 87A", formatINR(result.new.rebate)],
-              ["Cess", formatINR(result.new.cess)],
-              ["Total tax", formatINR(result.new.totalTax)],
+              [L(dict).taxableIncome, formatINR(result.new.taxableIncome)],
+              [L(dict).taxOnSlabs, formatINR(result.new.slabTax)],
+              [L(dict).rebate87a, formatINR(result.new.rebate)],
+              [L(dict).cess, formatINR(result.new.cess)],
+              [L(dict).totalTax, formatINR(result.new.totalTax)],
             ]}
           />
         ),
@@ -511,13 +544,13 @@ const BUILDERS: Record<CalculatorId, Builder> = {
     },
   }),
 
-  "apgli-gpf": () => ({
+  "apgli-gpf": (dict) => ({
     fields: [
-      { name: "basicPay", label: "Basic pay", defaultValue: "52590", required: true },
-      { name: "premium", label: "APGLI premium (from your slab)", defaultValue: "1000" },
-      { name: "opening", label: "GPF opening balance", defaultValue: "500000" },
-      { name: "subscription", label: "GPF monthly subscription", defaultValue: "10000" },
-      { name: "gpfRate", label: "GPF interest %", defaultValue: "7.1", step: "0.01" },
+      { name: "basicPay", label: L(dict).basicPay, defaultValue: "52590", required: true },
+      { name: "premium", label: L(dict).apgliPremium, defaultValue: "1000" },
+      { name: "opening", label: L(dict).gpfOpening, defaultValue: "500000" },
+      { name: "subscription", label: L(dict).gpfSubscription, defaultValue: "10000" },
+      { name: "gpfRate", label: L(dict).gpfRate, defaultValue: "7.1", step: "0.01" },
     ],
     compute: (v) => {
       // The APGLI slab table is not seeded yet, so the premium is an input
@@ -536,10 +569,10 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              ["APGLI monthly", formatINR(apgli.monthlyPremium)],
-              ["APGLI annual", formatINR(apgli.annualPremium)],
-              ["GPF interest (year)", formatINR(gpf.interest)],
-              ["GPF closing balance", formatINR(gpf.closingBalance)],
+              [L(dict).apgliMonthly, formatINR(apgli.monthlyPremium)],
+              [L(dict).apgliAnnual, formatINR(apgli.annualPremium)],
+              [L(dict).gpfInterest, formatINR(gpf.interest)],
+              [L(dict).gpfClosing, formatINR(gpf.closingBalance)],
             ]}
           />
         ),
@@ -550,11 +583,11 @@ const BUILDERS: Record<CalculatorId, Builder> = {
     },
   }),
 
-  retirement: () => ({
+  retirement: (dict) => ({
     fields: [
-      { name: "dob", label: "Date of birth", type: "date", defaultValue: "1970-06-15", required: true },
-      { name: "doj", label: "Date of joining", type: "date", defaultValue: "1995-08-01", required: true },
-      { name: "age", label: "Retirement age", defaultValue: "60" },
+      { name: "dob", label: L(dict).dob, type: "date", defaultValue: "1970-06-15", required: true },
+      { name: "doj", label: L(dict).doj, type: "date", defaultValue: "1995-08-01", required: true },
+      { name: "age", label: L(dict).retirementAge, defaultValue: "60" },
     ],
     compute: (v) => {
       const result = calculateRetirement({
@@ -567,10 +600,10 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              ["Retirement date", result.retirementDate],
-              ["Total service (years)", String(result.totalServiceYears)],
-              ["Completed (years)", String(result.completedServiceYears)],
-              ["Days remaining", String(result.remainingDays)],
+              [L(dict).retirementDate, result.retirementDate],
+              [L(dict).totalService, String(result.totalServiceYears)],
+              [L(dict).completedService, String(result.completedServiceYears)],
+              [L(dict).daysRemaining, String(result.remainingDays)],
             ]}
           />
         ),
@@ -581,49 +614,49 @@ const BUILDERS: Record<CalculatorId, Builder> = {
     },
   }),
 
-  medical: () => ({
+  medical: (dict) => ({
     fields: [
       {
         name: "enrolled",
-        label: "EHS enrolled",
+        label: L(dict).ehsEnrolled,
         type: "select",
         defaultValue: "yes",
         options: [
-          { value: "yes", label: "Yes" },
-          { value: "no", label: "No" },
+          { value: "yes", label: L(dict).yes },
+          { value: "no", label: L(dict).no },
         ],
       },
       {
         name: "treatment",
-        label: "Treatment",
+        label: L(dict).treatment,
         type: "select",
         defaultValue: "inpatient",
         options: [
-          { value: "inpatient", label: "Inpatient" },
-          { value: "outpatient", label: "Outpatient" },
-          { value: "emergency", label: "Emergency" },
-          { value: "diagnostic", label: "Diagnostic" },
+          { value: "inpatient", label: L(dict).inpatient },
+          { value: "outpatient", label: L(dict).outpatient },
+          { value: "emergency", label: L(dict).emergency },
+          { value: "diagnostic", label: L(dict).diagnostic },
         ],
       },
       {
         name: "hospital",
-        label: "Hospital",
+        label: L(dict).hospital,
         type: "select",
         defaultValue: "ehs-empanelled",
         options: [
-          { value: "ehs-empanelled", label: "EHS empanelled" },
-          { value: "government", label: "Government" },
-          { value: "private-non-empanelled", label: "Private, not empanelled" },
+          { value: "ehs-empanelled", label: L(dict).ehsEmpanelled },
+          { value: "government", label: L(dict).government },
+          { value: "private-non-empanelled", label: L(dict).privateNotEmpanelled },
         ],
       },
       {
         name: "permission",
-        label: "Prior permission obtained",
+        label: L(dict).priorPermission,
         type: "select",
         defaultValue: "no",
         options: [
-          { value: "no", label: "No" },
-          { value: "yes", label: "Yes" },
+          { value: "no", label: L(dict).no },
+          { value: "yes", label: L(dict).yes },
         ],
       },
     ],

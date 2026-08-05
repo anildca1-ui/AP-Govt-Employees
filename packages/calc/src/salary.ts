@@ -46,7 +46,13 @@ export interface SalaryResult {
   gross: Rupees;
   totalDeductions: Rupees;
   net: Rupees;
-  breakdown: { label: string; amount: Rupees }[];
+  /**
+   * One line per component. `key` names the component so the UI can label it in
+   * the reader's language; `label` is an English fallback for share text and
+   * tests. A pure calculation package must not decide what language a figure is
+   * read in.
+   */
+  breakdown: { key: string; label: string; percent?: number; amount: Rupees }[];
   sourceGos: string[];
   unverified: boolean;
 }
@@ -113,11 +119,15 @@ export function calculateSalary(
     totalDeductions,
     net: gross - totalDeductions,
     breakdown: [
-      { label: "Basic Pay", amount: roundRupees(basicPay) },
-      { label: `DA @ ${daPercent}%`, amount: daAmount },
-      { label: `HRA @ ${hraPercent}%`, amount: hraAmount },
-      ...(ccaAmount === 0 ? [] : [{ label: "CCA", amount: ccaAmount }]),
-      ...deductionRows.map((row) => ({ label: `− ${row.label}`, amount: -row.amount })),
+      { key: "basicPay", label: "Basic Pay", amount: roundRupees(basicPay) },
+      { key: "da", label: `DA @ ${daPercent}%`, percent: daPercent, amount: daAmount },
+      { key: "hra", label: `HRA @ ${hraPercent}%`, percent: hraPercent, amount: hraAmount },
+      ...(ccaAmount === 0 ? [] : [{ key: "cca", label: "CCA", amount: ccaAmount }]),
+      ...deductionRows.map((row) => ({
+        key: `deduction:${row.label}`,
+        label: `− ${row.label}`,
+        amount: -row.amount,
+      })),
     ],
     sourceGos: [...sourceGos],
     unverified,
