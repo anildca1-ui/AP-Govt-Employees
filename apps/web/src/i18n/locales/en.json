@@ -306,7 +306,16 @@
     "intro": "Newly approved GOs, by topic.",
     "all": "All",
     "noNews": "No news yet",
-    "added": "Added"
+    "added": "Added",
+    "tags": {
+      "DA": "DA",
+      "PRC": "PRC",
+      "Transfers": "Transfers",
+      "EHS": "EHS",
+      "Exams": "Exams",
+      "Pension": "Pension",
+      "Leave": "Leave"
+    }
   },
   "tests": {
     "title": "Departmental Tests",

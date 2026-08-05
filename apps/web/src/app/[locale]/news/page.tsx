@@ -68,7 +68,10 @@ export default async function NewsPage({
                 : "rounded-md border border-slate-300 px-3 py-1 text-sm"
             }
           >
-            {name}
+            {/* The tag itself stays the English identifier because it is the URL
+                and the value stored against a document; only its label is
+                translated. */}
+            {dict.news.tags[name]}
           </Link>
         ))}
       </nav>
