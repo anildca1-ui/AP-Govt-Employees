@@ -5,7 +5,16 @@ import { EMBEDDING_DIMENSIONS, type EmbeddingProvider } from "../pipeline/types.
  * stub the transport and never touch the network.
  */
 
-export const OPENAI_EMBEDDINGS_URL = "https://api.openai.com/v1/embeddings";
+/**
+ * Overridable via OPENAI_BASE_URL, matching the chat route and GEMINI_BASE_URL.
+ * There are two embedding call sites — this one indexes documents, the chat
+ * embeds the question — and if only one honours the override, the indexer
+ * quietly still calls the real API. That is exactly what happened the first
+ * time index:documents was run against stand-ins.
+ */
+export const OPENAI_EMBEDDINGS_URL = `${
+  process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1"
+}/embeddings`;
 export const DEFAULT_OPENAI_EMBEDDING_MODEL = "text-embedding-3-large";
 
 /**

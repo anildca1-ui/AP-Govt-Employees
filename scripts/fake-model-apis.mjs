@@ -66,14 +66,23 @@ createServer((req, res) => {
     let body = "";
     req.on("data", (c) => (body += c));
     req.on("end", () => {
-      let input = "";
+      // One item per input, each carrying its index — the real API's contract,
+      // and one the ingest embedder checks. Returning a single unindexed vector
+      // for a batch of forty chunks is the sort of stand-in that passes while
+      // the real thing would fail.
+      let inputs = [""];
       try {
-        input = String(JSON.parse(body).input ?? "");
+        const raw = JSON.parse(body).input;
+        inputs = Array.isArray(raw) ? raw.map(String) : [String(raw ?? "")];
       } catch {
-        /* an unparseable body still gets a well-formed vector */
+        /* an unparseable body still gets a well-formed response */
       }
       res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify({ data: [{ embedding: vectorFor(input) }] }));
+      res.end(
+        JSON.stringify({
+          data: inputs.map((text, index) => ({ index, embedding: vectorFor(text) })),
+        }),
+      );
     });
     return;
   }

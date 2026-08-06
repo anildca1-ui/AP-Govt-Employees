@@ -7,7 +7,9 @@ import { EMBEDDING_DIMENSIONS, type EmbeddingProvider } from "../pipeline/types.
  * needed; the response is still validated against it.
  */
 
-export const DEEPINFRA_BGE_M3_URL = "https://api.deepinfra.com/v1/inference/BAAI/bge-m3";
+/** Overridable for the same reason as OPENAI_BASE_URL. */
+export const DEEPINFRA_BGE_M3_URL =
+  process.env.DEEPINFRA_BASE_URL ?? "https://api.deepinfra.com/v1/inference/BAAI/bge-m3";
 
 /** Same batch size as the OpenAI provider, and for the same body-size reason. */
 export const BGE_EMBED_BATCH_SIZE = 100;
