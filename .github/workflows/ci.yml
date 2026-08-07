@@ -29,6 +29,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # config/rates/rps-2022.json is bundled into the browser for the
+      # calculators; migration 005 seeds the database the server reads. If they
+      # drift, the page and the database disagree about what an employee is
+      # owed and nothing else in this workflow notices.
+      - name: Rates seed matches its config
+        run: node scripts/generate-rates-seed.mjs --check
+
       - name: Lint
         run: pnpm lint
 

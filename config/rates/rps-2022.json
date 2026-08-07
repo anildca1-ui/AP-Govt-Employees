@@ -140,10 +140,10 @@
         "applies_to": "basic_pay"
       },
       "source_go": {
-        "go_number": null,
+        "go_number": "G.O.Ms.No.28",
         "go_date": null,
         "verified": false,
-        "note": "Sanctioning GO not yet identified"
+        "note": "CANDIDATE from web search, not confirmed — two searches place No.28 at 26.39%→30.03% w.e.f. 01-01-2023, an earlier one placed it at 22.75%→26.39% w.e.f. 01-07-2022. Confirm against the PDF before trusting either."
       }
     },
     {

@@ -24,6 +24,10 @@ step() {
   fi
 }
 
+# First, because it is the cheapest and the most expensive to get wrong: if the
+# rates JSON and the seed migration disagree, the figure the calculator shows a
+# user and the figure the database holds are different numbers.
+step "rates seed" node scripts/generate-rates-seed.mjs --check
 step "lint"      pnpm lint
 step "typecheck" pnpm typecheck
 step "test"      pnpm test
