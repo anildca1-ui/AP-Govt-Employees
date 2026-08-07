@@ -1,5 +1,6 @@
 import { roundRupees, type Rupees } from "./money.js";
 import { rateOn, type RateRow } from "./rates.js";
+import { CalcError } from "./errors.js";
 
 /**
  * Calculator 1 — DA arrears (PLAN.md Part 4).
@@ -52,16 +53,23 @@ export interface DaArrearsResult {
   sourceGos: string[];
 }
 
-export class InvalidPeriodError extends Error {}
+export class InvalidPeriodError extends CalcError {}
 
 const MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
 
 /** Inclusive list of yyyy-mm between two months. */
 export function monthsBetween(fromMonth: string, toMonth: string): string[] {
-  if (!MONTH_PATTERN.test(fromMonth)) throw new InvalidPeriodError(`Bad month: ${fromMonth}`);
-  if (!MONTH_PATTERN.test(toMonth)) throw new InvalidPeriodError(`Bad month: ${toMonth}`);
+  if (!MONTH_PATTERN.test(fromMonth)) {
+    throw new InvalidPeriodError("badMonth", `Bad month: ${fromMonth}`, { month: fromMonth });
+  }
+  if (!MONTH_PATTERN.test(toMonth)) {
+    throw new InvalidPeriodError("badMonth", `Bad month: ${toMonth}`, { month: toMonth });
+  }
   if (fromMonth > toMonth) {
-    throw new InvalidPeriodError(`${fromMonth} is after ${toMonth}`);
+    throw new InvalidPeriodError("periodReversed", `${fromMonth} is after ${toMonth}`, {
+      from: fromMonth,
+      to: toMonth,
+    });
   }
 
   const months: string[] = [];
@@ -89,10 +97,16 @@ export function calculateDaArrears(
   const { basicPay, fromMonth, toMonth, paidDaPercent, cashFraction = 1 } = input;
 
   if (!Number.isFinite(basicPay) || basicPay <= 0) {
-    throw new InvalidPeriodError(`Basic pay must be a positive number, received ${basicPay}`);
+    throw new InvalidPeriodError(
+      "invalidInput",
+      `Basic pay must be a positive number, received ${basicPay}`,
+    );
   }
   if (cashFraction < 0 || cashFraction > 1) {
-    throw new InvalidPeriodError(`cashFraction must be between 0 and 1, received ${cashFraction}`);
+    throw new InvalidPeriodError(
+      "invalidInput",
+      `cashFraction must be between 0 and 1, received ${cashFraction}`,
+    );
   }
 
   const months: DaArrearsMonth[] = [];

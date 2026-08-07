@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { QuizQuestion } from "@/lib/library/tests-hub";
+import { classifyFailure, failureMessage } from "@/lib/chat/failure";
 import type { Dictionary } from "@/i18n/dictionary";
 
 /**
@@ -26,16 +27,25 @@ export function QuizClient({ testId, dict }: { testId: string; dict: Dictionary 
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ testId }),
       });
+      if (!response.ok) {
+        // Not read from the body: the route's message is ours to read, not the
+        // reader's ("Generation failed", "GEMINI_API_KEY is not set"). Being
+        // rate-limited is worth saying plainly, though — "quiz unavailable"
+        // would read as broken when the answer is simply to wait.
+        const failure = classifyFailure(response.status, response.headers.get("retry-after"));
+        setMessage(
+          failure.kind === "rate-limited"
+            ? failureMessage(failure, dict)
+            : dict.tests.quizUnavailable,
+        );
+        return;
+      }
+
       const payload = (await response.json()) as {
         questions?: QuizQuestion[];
         reason?: string;
-        error?: string;
       };
 
-      if (!response.ok) {
-        setMessage(payload.error ?? dict.tests.quizUnavailable);
-        return;
-      }
       if (payload.reason === "no-corpus" || (payload.questions ?? []).length === 0) {
         setMessage(dict.tests.noCorpus);
         return;

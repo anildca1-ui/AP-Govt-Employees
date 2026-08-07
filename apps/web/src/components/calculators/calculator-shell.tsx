@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState, type ReactNode } from "react";
+import { calcErrorMessage } from "@/lib/calculators/errors";
 import type { Dictionary } from "@/i18n/dictionary";
 
 /**
@@ -83,10 +84,12 @@ function CalculatorShellInner({ title, description, fields, dict, compute }: Cal
       setOutcome(compute(values));
       setError(null);
     } catch (caught) {
-      // Calculator errors are deliberately specific ("no DA rate is on record
-      // for 2019-01"), so they are worth showing rather than swallowing.
+      // A calculator's refusal is specific and worth showing — it declines
+      // rather than inventing a figure. Its message is not: that is written for
+      // a maintainer, and some end with instructions to seed the rates table.
+      // The code carries the meaning, the dictionary the words.
       setOutcome(null);
-      setError(caught instanceof Error ? caught.message : String(caught));
+      setError(calcErrorMessage(caught, dict));
     }
   }
 

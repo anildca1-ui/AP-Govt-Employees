@@ -1,4 +1,5 @@
 import { roundRupees, type Rupees } from "./money.js";
+import { CalcError } from "./errors.js";
 
 /**
  * Calculators 5-9, 11 and 12 (PLAN.md Part 4) — the retirement family.
@@ -39,11 +40,14 @@ export interface NpsResult {
   growth: Rupees;
 }
 
-export class InvalidInputError extends Error {}
+export class InvalidInputError extends CalcError {}
 
 function positive(value: number, name: string): void {
   if (!Number.isFinite(value) || value < 0) {
-    throw new InvalidInputError(`${name} must be a non-negative number, received ${value}`);
+    throw new InvalidInputError(
+      "invalidInput",
+      `${name} must be a non-negative number, received ${value}`,
+    );
   }
 }
 
@@ -381,9 +385,13 @@ export interface RetirementResult {
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function parseIso(value: string, name: string): Date {
-  if (!ISO_DATE.test(value)) throw new InvalidInputError(`${name} must be yyyy-mm-dd`);
+  if (!ISO_DATE.test(value)) {
+    throw new InvalidInputError("invalidInput", `${name} must be yyyy-mm-dd`);
+  }
   const date = new Date(`${value}T00:00:00Z`);
-  if (Number.isNaN(date.getTime())) throw new InvalidInputError(`${name} is not a real date`);
+  if (Number.isNaN(date.getTime())) {
+    throw new InvalidInputError("invalidInput", `${name} is not a real date`);
+  }
   return date;
 }
 
@@ -400,7 +408,7 @@ export function calculateRetirement(input: RetirementInput): RetirementResult {
   const doj = parseIso(dateOfJoining, "dateOfJoining");
   const today = parseIso(asOf ?? new Date().toISOString().slice(0, 10), "asOf");
 
-  if (doj < dob) throw new InvalidInputError("Date of joining is before date of birth");
+  if (doj < dob) throw new InvalidInputError("joiningBeforeBirth", "Date of joining is before date of birth");
 
   const attainsYear = dob.getUTCFullYear() + retirementAge;
   const attainsMonth = dob.getUTCMonth();

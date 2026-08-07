@@ -277,6 +277,15 @@
       "yearsFullPension": "Years for full pension",
       "yearsToRetire": "Years to retirement",
       "yes": "Yes"
+    },
+    "errors": {
+      "generic": "We could not calculate with these values. Please check the details you entered.",
+      "rateNotFound": "No rate is on record for {on}. The GO for that period has not been added yet — please choose another period.",
+      "offScale": "₹{pay} is not a stage of the master scale. Please check your basic pay.",
+      "noApgliSlab": "No APGLI slab on record covers a basic pay of ₹{basicPay}.",
+      "badMonth": "{month} is not a valid month. Please use YYYY-MM.",
+      "periodReversed": "{from} to {to} runs backwards — the first month must come before the last.",
+      "joiningBeforeBirth": "The date of joining is before the date of birth. Please check the dates."
     }
   },
   "gos": {
@@ -375,7 +384,14 @@
     "delete": "Delete permanently",
     "deleted": "Your data has been deleted.",
     "deleteFailed": "Deletion failed.",
-    "notConfigured": "Accounts are not available yet."
+    "notConfigured": "Accounts are not available yet.",
+    "errBasicPayInvalid": "Basic pay must be a number greater than zero.",
+    "errBasicPayTypo": "That basic pay looks too high — it may be a typo. Please check it.",
+    "errJoinDateInvalid": "That date of joining is not a real date.",
+    "errSchemeUnknown": "That is not one of the pension schemes.",
+    "errSaveFailed": "Could not save your details. Please try again in a moment.",
+    "errConfirm": "Type DELETE exactly to confirm.",
+    "errGeneric": "Something went wrong. Please try again."
   },
   "privacyPage": {
     "title": "Privacy Policy",

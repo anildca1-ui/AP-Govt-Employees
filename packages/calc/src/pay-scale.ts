@@ -1,4 +1,5 @@
 import { rateOn, type RateRow } from "./rates.js";
+import { CalcError } from "./errors.js";
 
 /**
  * Calculators 2 and 3 — increment and promotion/AAS fixation (PLAN.md Part 4).
@@ -15,13 +16,14 @@ export interface MasterScalePayload {
   maximum: number;
 }
 
-export class OffScaleError extends Error {
+export class OffScaleError extends CalcError {
   constructor(pay: number) {
     super(
+      "offScale",
       `${pay} is not a stage of the master scale. Pay must sit on a stage — ` +
         `check the figure, or the scale in the rates table if a new PRC has been issued.`,
+      { pay },
     );
-    this.name = "OffScaleError";
   }
 }
 

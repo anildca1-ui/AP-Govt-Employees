@@ -5,6 +5,7 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { getDictionary, type Dictionary } from "@/i18n/dictionary";
 import { currentUser, serverAuthClient } from "@/lib/account/session";
 import { PENSION_SCHEMES, rowToProfile } from "@/lib/account/profile";
+import { accountErrorMessage } from "@/lib/account/errors";
 
 /** Account: phone-OTP sign-in, profile, consent, and delete-my-data (Phase 6). */
 export const dynamic = "force-dynamic";
@@ -59,7 +60,11 @@ export default async function AccountPage({
       </header>
 
       {state.saved === "1" && <p className="text-sm text-green-700">{dict.account.saved}</p>}
-      {state.error !== undefined && <p className="text-sm text-red-700">{state.error}</p>}
+      {/* Translated from the code, never the raw parameter — that rendered
+          Postgres's own words on the page. */}
+      {accountErrorMessage(state.error, dict) !== null && (
+        <p className="text-sm text-red-700">{accountErrorMessage(state.error, dict)}</p>
+      )}
 
       <form action={saveProfile} className="space-y-3 rounded-lg border border-slate-200 p-4">
         <h2 className="font-medium">{dict.account.profile}</h2>

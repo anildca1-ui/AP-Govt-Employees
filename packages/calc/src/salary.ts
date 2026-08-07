@@ -1,5 +1,6 @@
 import { roundRupees, type Rupees } from "./money.js";
 import { rateOn, type RateRow } from "./rates.js";
+import { CalcError } from "./errors.js";
 
 /**
  * Calculator 4 — full salary (PLAN.md Part 4).
@@ -57,7 +58,7 @@ export interface SalaryResult {
   unverified: boolean;
 }
 
-export class InvalidSalaryInputError extends Error {}
+export class InvalidSalaryInputError extends CalcError {}
 
 export function calculateSalary(
   input: SalaryInput,
@@ -66,10 +67,16 @@ export function calculateSalary(
   const { basicPay, hraPercent, cca = 0, onDate, deductions = {} } = input;
 
   if (!Number.isFinite(basicPay) || basicPay <= 0) {
-    throw new InvalidSalaryInputError(`Basic pay must be positive, received ${basicPay}`);
+    throw new InvalidSalaryInputError(
+      "invalidInput",
+      `Basic pay must be positive, received ${basicPay}`,
+    );
   }
   if (!Number.isFinite(hraPercent) || hraPercent < 0) {
-    throw new InvalidSalaryInputError(`HRA percentage must be >= 0, received ${hraPercent}`);
+    throw new InvalidSalaryInputError(
+      "invalidInput",
+      `HRA percentage must be >= 0, received ${hraPercent}`,
+    );
   }
 
   const date = onDate ?? new Date().toISOString().slice(0, 10);

@@ -1,3 +1,5 @@
+export { CalcError, isCalcError, type CalcErrorCode } from "./errors.js";
+
 export { roundRupees, formatINR, type Rupees } from "./money.js";
 
 export {

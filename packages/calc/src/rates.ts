@@ -5,6 +5,7 @@
  * so updating a DA GO updates every calculator at once — and so every result
  * can name the GO it was computed from.
  */
+import { CalcError } from "./errors.js";
 
 export type RateKind = "DA" | "HRA" | "IR" | "NPS" | "IT_SLAB" | "MASTER_SCALE" | "APGLI";
 
@@ -39,13 +40,14 @@ export interface ResolvedRate<TPayload> {
   unverified: boolean;
 }
 
-export class RateNotFoundError extends Error {
+export class RateNotFoundError extends CalcError {
   constructor(kind: RateKind, on: string) {
     super(
+      "rateNotFound",
       `No ${kind} rate is on record for ${on}. Rates come from the rates table ` +
         `(CLAUDE.md rule 1); seed or verify the row before calculating.`,
+      { kind, on },
     );
-    this.name = "RateNotFoundError";
   }
 }
 

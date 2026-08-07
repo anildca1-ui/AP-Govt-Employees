@@ -62,8 +62,10 @@ export async function POST(request: Request): Promise<Response> {
     }
     context = buildContext(retrieval, `Write up to 20 practice questions for ${test.title}.`);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Retrieval failed";
-    return Response.json({ error: message }, { status: 500 });
+    // Cause to the log, a fixed string over the wire — the client renders its
+    // own localised text off the status.
+    console.error("[quiz] retrieval failed:", error);
+    return Response.json({ error: "Retrieval failed" }, { status: 500 });
   }
 
   try {
@@ -96,7 +98,7 @@ export async function POST(request: Request): Promise<Response> {
     // not repaired: fewer questions beats a question nobody can check.
     return Response.json({ questions: parseQuiz(text) });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Generation failed";
-    return Response.json({ error: message }, { status: 500 });
+    console.error("[quiz] generation failed:", error);
+    return Response.json({ error: "Generation failed" }, { status: 500 });
   }
 }

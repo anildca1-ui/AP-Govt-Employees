@@ -1,4 +1,5 @@
 import { roundRupees, type Rupees } from "./money.js";
+import { CalcError } from "./errors.js";
 
 /**
  * Calculator 10 — income tax, old regime versus new (PLAN.md Part 4).
@@ -51,7 +52,7 @@ export interface TaxResult {
   bands: { band: string; taxable: Rupees; percent: number; tax: Rupees }[];
 }
 
-export class InvalidTaxInputError extends Error {}
+export class InvalidTaxInputError extends CalcError {}
 
 /** Tax on income by slabs — marginal, so each band taxes only its own slice. */
 export function taxBySlabs(
@@ -95,7 +96,10 @@ export function calculateTax(input: TaxInput, regime: TaxRegimePayload): TaxResu
   const { grossSalary, deductions = {} } = input;
 
   if (!Number.isFinite(grossSalary) || grossSalary < 0) {
-    throw new InvalidTaxInputError(`Gross salary must be >= 0, received ${grossSalary}`);
+    throw new InvalidTaxInputError(
+      "invalidInput",
+      `Gross salary must be >= 0, received ${grossSalary}`,
+    );
   }
 
   // Chapter VI-A deductions and the HRA exemption are old-regime only; allowing

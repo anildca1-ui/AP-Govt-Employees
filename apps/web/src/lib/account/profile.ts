@@ -18,8 +18,25 @@ export interface Profile {
   scheme: PensionScheme | null;
 }
 
+/**
+ * A stable identifier for each way a profile can be rejected.
+ *
+ * The reason travels as a code, not as prose. `message` is English and written
+ * for a developer reading a test failure; it used to be put straight into a
+ * redirect and rendered on the page, so a Telugu-speaking employee mistyping
+ * their basic pay was answered in English (rule 5). The page maps the code to
+ * the dictionary, the same way the sign-in form already handles "otp".
+ */
+export type ProfileProblemCode =
+  | "basicPayInvalid"
+  | "basicPayTypo"
+  | "joinDateInvalid"
+  | "schemeUnknown";
+
 export interface ProfileProblem {
   field: keyof Profile;
+  code: ProfileProblemCode;
+  /** Developer-facing. Never render this; use the code. */
   message: string;
 }
 
@@ -53,11 +70,11 @@ export function validateProfile(input: {
   if (rawPay !== "") {
     const parsed = Number(rawPay);
     if (!Number.isFinite(parsed) || parsed <= 0) {
-      problems.push({ field: "basicPay", message: "Basic pay must be a positive number" });
+      problems.push({ field: "basicPay", code: "basicPayInvalid", message: "Basic pay must be a positive number" });
     } else if (parsed > 10_000_000) {
       // Far above the master scale maximum: almost certainly a typo, and a
       // wrong figure here quietly wrongs every prefilled calculator.
-      problems.push({ field: "basicPay", message: "That basic pay looks like a typo" });
+      problems.push({ field: "basicPay", code: "basicPayTypo", message: "That basic pay looks like a typo" });
     } else {
       basicPay = Math.round(parsed);
     }
@@ -67,7 +84,7 @@ export function validateProfile(input: {
   const rawDate = (input.joinDate ?? "").trim();
   if (rawDate !== "") {
     if (!ISO_DATE.test(rawDate) || Number.isNaN(new Date(`${rawDate}T00:00:00Z`).getTime())) {
-      problems.push({ field: "joinDate", message: "Date of joining must be a real date" });
+      problems.push({ field: "joinDate", code: "joinDateInvalid", message: "Date of joining must be a real date" });
     } else {
       joinDate = rawDate;
     }
@@ -79,7 +96,7 @@ export function validateProfile(input: {
     if ((PENSION_SCHEMES as readonly string[]).includes(rawScheme)) {
       scheme = rawScheme as PensionScheme;
     } else {
-      problems.push({ field: "scheme", message: "Unknown pension scheme" });
+      problems.push({ field: "scheme", code: "schemeUnknown", message: "Unknown pension scheme" });
     }
   }
 

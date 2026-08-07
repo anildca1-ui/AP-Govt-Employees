@@ -85,13 +85,20 @@ export async function saveProfile(formData: FormData): Promise<void> {
     scheme: field(formData, "scheme"),
   });
 
+  // The code, not the message: the page translates it. Sending the message put
+  // "Basic pay must be a positive number" on a Telugu page.
   if (problems.length > 0) {
-    redirect(`/${locale}/account?error=${encodeURIComponent(problems[0]!.message)}`);
+    redirect(`/${locale}/account?error=${problems[0]!.code}`);
   }
 
   // Under the user's own JWT: RLS decides whose row this is, not this code.
   const { error } = await db.from("users").upsert(profileToRow(user.id, profile));
-  if (error) redirect(`/${locale}/account?error=${encodeURIComponent(error.message)}`);
+  if (error) {
+    // Postgres speaking to a developer — "new row violates row-level security
+    // policy for table users". Logged, not shown.
+    console.error("[account] profile save failed:", error.message);
+    redirect(`/${locale}/account?error=saveFailed`);
+  }
 
   // Consent is recorded as an event each time it is given, never overwritten —
   // the question is what someone agreed to on a given day.

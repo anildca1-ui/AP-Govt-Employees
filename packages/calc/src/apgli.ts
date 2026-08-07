@@ -1,4 +1,5 @@
 import { roundRupees, type Rupees } from "./money.js";
+import { CalcError } from "./errors.js";
 
 /**
  * Calculator 11 (first half) — APGLI premium and bonus.
@@ -38,13 +39,14 @@ export interface ApgliResult {
   maturityValue: Rupees | null;
 }
 
-export class NoApgliSlabError extends Error {
+export class NoApgliSlabError extends CalcError {
   constructor(basicPay: number) {
     super(
+      "noApgliSlab",
       `No APGLI slab covers a basic pay of ${basicPay}. The slab table comes ` +
         `from the rates table — seed or extend it rather than assuming a premium.`,
+      { basicPay },
     );
-    this.name = "NoApgliSlabError";
   }
 }
 
