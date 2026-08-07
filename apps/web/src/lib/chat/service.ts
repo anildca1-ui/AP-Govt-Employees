@@ -8,6 +8,7 @@ import {
   type RetrievalDb,
   type RetrievalResult,
 } from "@ap-emp-ai/rag";
+import { MAX_QUESTION_CHARS } from "./failure";
 
 /**
  * The chat pipeline, kept out of the route handler so it can be tested without
@@ -37,7 +38,12 @@ export interface PreparedChat {
   stream: AsyncGenerator<string, void, undefined>;
 }
 
-export const MAX_QUESTION_CHARS = 2000;
+/**
+ * Defined in ./failure so a client component can read it without importing this
+ * module, which pulls in the whole RAG package. Re-exported so the server-side
+ * callers keep their existing import.
+ */
+export { MAX_QUESTION_CHARS };
 
 export class InvalidQuestionError extends Error {}
 

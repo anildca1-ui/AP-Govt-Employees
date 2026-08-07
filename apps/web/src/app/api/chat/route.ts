@@ -119,8 +119,13 @@ export async function POST(request: Request): Promise<Response> {
     }
     // Configuration and retrieval failures are ours, and must not be reported
     // as an answer — an empty answer would read as "no such rule exists".
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return Response.json({ error: message }, { status: 500 });
+    //
+    // Logged rather than returned. The detail ("GEMINI_API_KEY is not set") is
+    // written for whoever runs the site, and the page has no way to show it to
+    // a reader that is not both confusing and English. The client renders a
+    // localised message off the status code; this is where the cause lives.
+    console.error("[chat] request failed:", error);
+    return Response.json({ error: "Chat is unavailable" }, { status: 500 });
   }
 
   const { retrieval, citations, stream } = prepared;
@@ -146,10 +151,11 @@ export async function POST(request: Request): Promise<Response> {
         const logId = await logChat({ session, lang, question, answer, citations });
         send({ type: "done", logId });
       } catch (error) {
-        send({
-          type: "error",
-          message: error instanceof Error ? error.message : "Answer generation failed",
-        });
+        // Mid-stream: citations are already on the page and the answer is
+        // part-written. Same split as above — cause to the log, a fixed string
+        // over the wire, and the client shows its own localised text.
+        console.error("[chat] answer stream failed:", error);
+        send({ type: "error", message: "Answer generation failed" });
       } finally {
         controller.close();
       }

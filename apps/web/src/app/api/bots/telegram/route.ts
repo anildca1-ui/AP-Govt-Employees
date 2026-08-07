@@ -14,6 +14,7 @@ import {
   channelSource,
   isMonitoredChannel,
 } from "@/lib/bots/channel-monitor";
+import { InvalidQuestionError } from "@/lib/chat/service";
 
 /**
  * Telegram webhook (PLAN.md Phase 4).
@@ -167,11 +168,16 @@ async function respond(
     await logBotChat("telegram", String(ctx.chat.id), question, text, citations);
   } catch (error) {
     // Never leave a question unanswered — silence reads as a broken bot.
-    await ctx.reply(
-      error instanceof Error && error.message.includes("Question")
-        ? error.message
-        : "Sorry — I could not answer that just now. Please try again.",
-    );
+    //
+    // Matched on the error type, not on the word "Question" appearing in the
+    // message: that sniff passed through anything whose text happened to
+    // contain it, which is how "GEMINI_API_KEY is not set" reaches a sender.
+    if (error instanceof InvalidQuestionError) {
+      await ctx.reply(error.message);
+      return;
+    }
+    console.error("[bots] telegram answer failed:", error);
+    await ctx.reply("Sorry — I could not answer that just now. Please try again.");
   }
 }
 

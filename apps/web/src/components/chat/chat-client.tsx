@@ -4,6 +4,7 @@ import type { Citation, RetrievalMode } from "@ap-emp-ai/rag";
 import { useCallback, useRef, useState } from "react";
 import { CitationCard } from "./citation-card";
 import { readNdjson } from "@/lib/chat/ndjson";
+import { classifyFailure, failureMessage, MAX_QUESTION_CHARS } from "@/lib/chat/failure";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionary";
 
@@ -49,6 +50,27 @@ export function ChatClient({ locale, dict }: { locale: Locale; dict: Dictionary 
     if (asked === "" || busy) return;
 
     const index = turns.length;
+
+    // Checked here rather than reported from the server's 400: the reply would
+    // be English prose about a character count, and the question does not need
+    // a round trip to be known too long.
+    if (asked.length > MAX_QUESTION_CHARS) {
+      setTurns((current) => [
+        ...current,
+        {
+          question: asked,
+          answer: "",
+          citations: [],
+          mode: null,
+          logId: null,
+          status: "error",
+          errorMessage: dict.chat.errorTooLong,
+        },
+      ]);
+      setQuestion("");
+      return;
+    }
+
     setTurns((current) => [
       ...current,
       { question: asked, answer: "", citations: [], mode: null, logId: null, status: "streaming" },
@@ -68,8 +90,10 @@ export function ChatClient({ locale, dict }: { locale: Locale; dict: Dictionary 
       });
 
       if (!response.ok || response.body === null) {
-        const detail = (await response.json().catch(() => null)) as { error?: string } | null;
-        update(index, { status: "error", errorMessage: detail?.error ?? dict.chat.error });
+        // Deliberately not read from the body. The server's message describes
+        // our configuration, in English, to whoever is running the site.
+        const failure = classifyFailure(response.status, response.headers.get("retry-after"));
+        update(index, { status: "error", errorMessage: failureMessage(failure, dict) });
         return;
       }
 
@@ -85,7 +109,8 @@ export function ChatClient({ locale, dict }: { locale: Locale; dict: Dictionary 
         } else if (event.type === "done") {
           update(index, { status: "done", logId: event.logId });
         } else {
-          update(index, { status: "error", errorMessage: event.message });
+          // Same reason: event.message is the model or network failure verbatim.
+          update(index, { status: "error", errorMessage: dict.chat.error });
         }
       }
     } catch (error) {
@@ -99,7 +124,7 @@ export function ChatClient({ locale, dict }: { locale: Locale; dict: Dictionary 
       setBusy(false);
       abortRef.current = null;
     }
-  }, [question, busy, turns.length, locale, dict.chat.error, update]);
+  }, [question, busy, turns.length, locale, dict, update]);
 
   const sendFeedback = useCallback(
     async (index: number, logId: string, value: 1 | -1) => {

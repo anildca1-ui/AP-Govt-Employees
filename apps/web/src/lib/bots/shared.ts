@@ -1,5 +1,11 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { calculateDaArrears, formatINR, type RateRow } from "@ap-emp-ai/calc";
+import {
+  calculateDaArrears,
+  formatINR,
+  InvalidPeriodError,
+  RateNotFoundError,
+  type RateRow,
+} from "@ap-emp-ai/calc";
 import type { Citation, RetrievalDb } from "@ap-emp-ai/rag";
 import { prepareChat, validateQuestion } from "@/lib/chat/service";
 import { RATES } from "@/lib/calculators/rates-data";
@@ -257,6 +263,25 @@ export function daCommand(args: string[], siteUrl: string): string {
       `Month-wise table: ${siteUrl}/te/calculators/da-arrears${warning}`
     );
   } catch (error) {
-    return error instanceof Error ? error.message : "Could not calculate.";
+    // The catch used to return any error's message verbatim, so a fault of ours
+    // answered a /da command with its own diagnostics. Each case now gets what
+    // its reader can act on.
+
+    // Says what the sender typed wrong — "Bad month: xyz", "2025-06 is after
+    // 2024-01" — which is exactly what they need.
+    if (error instanceof InvalidPeriodError) return error.message;
+
+    // Real, and the sender's business, but its message ends with "seed or
+    // verify the row before calculating" — instructions for whoever runs the
+    // site, not for someone asking about their arrears.
+    if (error instanceof RateNotFoundError) {
+      return (
+        "No DA rate is on record for that period yet.\n" +
+        `Covered periods are listed at ${siteUrl}/te/calculators/da-arrears`
+      );
+    }
+
+    console.error("[bots] /da failed:", error);
+    return "Could not calculate. Please check the values and try again.";
   }
 }

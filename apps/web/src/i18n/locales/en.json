@@ -103,6 +103,10 @@
     "no": "No",
     "thanks": "Thank you",
     "error": "The answer could not be generated. Please try again.",
+    "errorRateLimited": "You have asked a lot of questions in a short time. Please try again in {wait}.",
+    "errorTooLong": "That question is too long. Please shorten it and ask again.",
+    "waitSeconds": "{n} seconds",
+    "waitMinutes": "{n} minutes",
     "emptyState": "No questions yet.",
     "examples": "Example questions"
   },

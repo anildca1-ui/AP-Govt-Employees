@@ -207,10 +207,15 @@ describe("daCommand", () => {
     }
   });
 
-  it("returns the calculator's own error when there is no rate for the period", () => {
+  it("says there is no rate for the period, without the maintainer's instructions", () => {
     // Before 2018-07, which is where the seeded DA timeline begins. The
     // calculator refuses rather than extrapolating backwards.
-    expect(daCommand(["52590", "20", "2017-01", "2017-03"], site)).toMatch(/No DA rate is on record/);
+    const reply = daCommand(["52590", "20", "2017-01", "2017-03"], site);
+
+    expect(reply).toMatch(/No DA rate is on record/);
+    // RateNotFoundError's own message ends with "seed or verify the row before
+    // calculating" — advice for whoever runs the site, sent to a stranger.
+    expect(reply).not.toMatch(/seed or verify|CLAUDE\.md|rates table/);
   });
 
   it("reports a recovery when the employee was paid more than was due", () => {
@@ -219,6 +224,18 @@ describe("daCommand", () => {
     const reply = daCommand(["52590", "20", "2019-01", "2019-03"], site);
 
     expect(reply).toMatch(/-₹/);
+  });
+
+  it("tells the sender what they typed wrong, but nothing about our internals", () => {
+    // The catch used to return any error's message verbatim, so a fault of
+    // ours answered a /da command with its own diagnostics. A period the
+    // calculator rejects is the sender's business; anything else is not.
+    const badPeriod = daCommand(["52590", "20", "2025-06", "2024-01"], site);
+    expect(badPeriod).toMatch(/2025-06 is after 2024-01/);
+
+    const badMonth = daCommand(["52590", "20", "not-a-month", "2024-01"], site);
+    expect(badMonth).toMatch(/Bad month/);
+    expect(badMonth).not.toMatch(/is not set|SUPABASE|GEMINI|API_KEY/);
   });
 });
 
