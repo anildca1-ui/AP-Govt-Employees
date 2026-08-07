@@ -56,5 +56,26 @@
       enable, and SENTRY_ORG/PROJECT/AUTH_TOKEN at deploy time for readable stack traces.
       Personal data is stripped before any report is sent; /privacy discloses the service)
 
+## Launch readiness — verified 2026-08-07
+
+The production build was started with an empty environment (no Supabase, no
+model key) and every page walked in a browser. What that established:
+
+- **Ready now, no accounts needed.** All 13 calculators load and compute
+  client-side. /links, /tests syllabus, /privacy, /disclaimer render fully.
+  /gos and /news degrade honestly ("database not connected yet", "no news
+  yet") rather than erroring. So the calculator half of the site can go live
+  on Vercel before any account exists.
+- **Needs the owner's accounts.** Chat, the GO library, news, quiz, sign-in
+  and the dashboard all need a Supabase project; chat and quiz additionally
+  need a Gemini key. Nothing here is unbuilt — it is unconfigured. See
+  SETUP.md, and `pnpm setup:check` reports what is missing.
+- **Needs a person, not a key.** 0 of 16 rates are verified against a GO
+  (`pnpm rates:worksheet`). Every unverified rate shows a warning on the
+  page, so nothing presents itself as authoritative — but the figures are
+  from public summaries, not from the orders. This is the last thing between
+  the site and being trustworthy, and it needs someone accountable for the
+  number.
+
 ## BLOCKED
 (none yet)
