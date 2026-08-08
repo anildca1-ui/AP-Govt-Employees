@@ -70,6 +70,13 @@ model key) and every page walked in a browser. What that established:
   and the dashboard all need a Supabase project; chat and quiz additionally
   need a Gemini key. Nothing here is unbuilt — it is unconfigured. See
   SETUP.md, and `pnpm setup:check` reports what is missing.
+- **Pre-launch legal checklist — passing.** PLAN.md Part 5 checkpoint 4 runs
+  as `pnpm verify:launch <url>`: disclaimer and privacy pages live and
+  substantive in both locales, DPDP consent recorded with its policy version
+  and deletion behind a typed confirmation, no page contacting any host but
+  its own, and the "not an official Government of AP website" banner on all
+  28 routes including 404s. Mutation-tested — an injected ad tag, a dropped
+  consent box and an unguarded delete each fail it.
 - **Needs a person, not a key.** 0 of 16 rates are verified against a GO
   (`pnpm rates:worksheet`). Every unverified rate shows a warning on the
   page, so nothing presents itself as authoritative — but the figures are
