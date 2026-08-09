@@ -232,7 +232,17 @@ export interface GratuityInput {
 }
 
 export interface GratuityResult {
-  emoluments: Rupees;
+  /**
+   * Monthly emoluments (basic + DA), NOT rounded, for the same reason as
+   * perDay above: the page shows it beside the total, and rounding it made
+   * "₹72,211 / 2 × 33 half-months" fall ₹5.50 short of the total on screen.
+   *
+   * Whether the governing GO computes gratuity from rounded monthly
+   * emoluments or from the exact figure is a rules question, not a display
+   * one — see TASKS.md BLOCKED. This changes only what is shown, never what
+   * is paid.
+   */
+  emoluments: number;
   halfMonthsEarned: number;
   computed: Rupees;
   payable: Rupees;
@@ -264,7 +274,7 @@ export function calculateGratuity(input: GratuityInput): GratuityResult {
   const cappedByCeiling = ceiling !== undefined && computed > ceiling;
 
   return {
-    emoluments: roundRupees(emoluments),
+    emoluments,
     halfMonthsEarned,
     computed: roundRupees(computed),
     payable: roundRupees(cappedByCeiling ? (ceiling as number) : computed),
@@ -284,7 +294,27 @@ export interface LeaveEncashmentInput {
 }
 
 export interface LeaveEncashmentResult {
-  perDay: Rupees;
+  /**
+   * Monthly emoluments (basic + DA), exact.
+   *
+   * This is the figure the rule is expressed in — leave salary is emoluments ×
+   * days / 30 — and it is what the page shows, because it is the only one a
+   * reader can multiply back to the total.
+   */
+  emoluments: number;
+  /**
+   * The daily rate, exact and NOT rounded: it is a rate, not a payment, and
+   * nobody is paid exactly one day.
+   *
+   * Kept for callers that want it, but deliberately not shown on the page. It
+   * used to be, rounded to the rupee, beside the total — "per day ₹2,407 × 300
+   * days = ₹7,22,113" — which is ₹13 out, found by someone checking their own
+   * retirement payout. Paise are not enough to rescue it either: at 300 days a
+   * rounding error in the second decimal is still a rupee. A per-day rate
+   * cannot be written at currency precision and also multiply out, so the page
+   * shows emoluments instead.
+   */
+  perDay: number;
   daysPaid: number;
   amount: Rupees;
   capped: boolean;
@@ -307,7 +337,9 @@ export function calculateLeaveEncashment(input: LeaveEncashmentInput): LeaveEnca
   const daysPaid = capped ? (maxDays as number) : days;
 
   return {
-    perDay: roundRupees(perDay),
+    // Both stay exact; only the amount is a payment, so only it is rounded.
+    emoluments,
+    perDay,
     daysPaid,
     amount: roundRupees(perDay * daysPaid),
     capped,

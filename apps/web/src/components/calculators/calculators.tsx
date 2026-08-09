@@ -411,7 +411,9 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              [L(dict).emoluments, formatINR(result.emoluments)],
+              // With paise: the total is computed from this exact figure, and a
+              // reader multiplying a rounded one finds rupees missing.
+              [L(dict).emoluments, formatINR(result.emoluments, { paise: true })],
               [L(dict).halfMonthsEarned, String(result.halfMonthsEarned)],
               [dict.calculators.total, formatINR(result.payable)],
             ]}
@@ -444,7 +446,11 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         body: (
           <Rows
             rows={[
-              [L(dict).perDay, formatINR(result.perDay)],
+              // Emoluments, not the per-day rate. Leave salary is emoluments ×
+              // days / 30, so this is the figure a reader can multiply back to
+              // the total — a per-day rate cannot be written at currency
+              // precision and still reconcile over 300 days.
+              [L(dict).emoluments, formatINR(result.emoluments, { paise: true })],
               [L(dict).daysPaid, String(result.daysPaid)],
               [dict.calculators.total, formatINR(result.amount)],
             ]}

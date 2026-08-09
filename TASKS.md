@@ -86,6 +86,16 @@ model key) and every page walked in a browser. What that established:
 
 ## BLOCKED
 
+- **Which intermediate a payout GO rounds is unconfirmed.** DA arrears are
+  computed from rounded pay-bill lines, because DA appears on a bill as whole
+  rupees. Gratuity and leave encashment instead compute from *exact* monthly
+  emoluments and round once at the end. Both are defensible and they differ by
+  a few rupees on a lakh; only the governing GO settles which is right.
+  *Not guessed:* rule 2 forbids answering AP rules from memory, so the display
+  was made honest (the page now shows the exact emoluments it computes from,
+  so what is on screen multiplies back to the total) without touching any
+  payout. Whoever verifies the rates should settle this at the same time.
+
 - **AAS 6-12-18-24 scheme not encoded** (PLAN.md Part 4, calculator 3). The FR
   22-B fixation *mechanism* is built and tested — notional increment, then fix
   at the next stage of the promotion scale, never below its floor. What is

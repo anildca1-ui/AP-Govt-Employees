@@ -157,6 +157,18 @@ describe("calculateGratuity", () => {
     expect(result.computed).toBe(Math.round((137310 / 2) * 33));
   });
 
+  it("keeps emoluments exact, so the page's arithmetic checks out", () => {
+    // base uses a basic pay of 100,000, whose emoluments land on a whole
+    // rupee, so neither case above could tell a rounded figure from an exact
+    // one. 52,590 × 1.3731 = 72,211.329 can: rounding it for display left
+    // "₹72,211 / 2 × 33" ₹5.50 short of the total shown beside it.
+    const result = calculateGratuity({ ...base, lastBasicPay: 52590 });
+
+    expect(result.emoluments).toBeCloseTo(72211.329, 3);
+    expect(result.emoluments).not.toBe(72211);
+    expect(Math.round((result.emoluments / 2) * result.halfMonthsEarned)).toBe(result.computed);
+  });
+
   it("caps service at the maximum half-months", () => {
     const result = calculateGratuity({ ...base, qualifyingYears: 40 });
 
@@ -189,6 +201,27 @@ describe("calculateLeaveEncashment", () => {
 
     expect(result.perDay).toBe(4577);
     expect(result.amount).toBe(roundish(137310 / 30, 300));
+  });
+
+  it("keeps the daily rate exact, so the page's arithmetic checks out", () => {
+    // The case above uses a basic pay whose daily rate lands on a whole rupee,
+    // so it could not tell a rounded rate from an exact one. This one can.
+    //
+    // 52,590 × 1.3731 = 72,211.329 → 2,407.0443 a day. Rounding that for
+    // display put "₹2,407 × 300 days" ₹13 below the total on the same screen,
+    // which someone checking their retirement payout would have to reconcile.
+    const result = calculateLeaveEncashment({ basicPay: 52590, daPercent: 37.31, days: 300 });
+
+    expect(result.perDay).toBeCloseTo(2407.0443, 4);
+    expect(result.perDay).not.toBe(2407);
+    expect(result.amount).toBe(722113);
+
+    // What the page shows is emoluments, because that is what a reader can
+    // multiply back: (72,211.33 / 30) × 300 lands on the total, while the
+    // per-day rate at two decimals is a rupee out over 300 days.
+    expect(result.emoluments).toBeCloseTo(72211.329, 3);
+    const asShown = Number(result.emoluments.toFixed(2));
+    expect(Math.round((asShown / 30) * result.daysPaid)).toBe(result.amount);
   });
 
   it("caps at the maximum encashable days", () => {
