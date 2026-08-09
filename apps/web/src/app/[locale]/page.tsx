@@ -84,7 +84,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <section className="space-y-2 border-t border-slate-200 pt-6">
         <Link
           href={`/${locale}/calculators`}
-          className="text-sm font-medium text-blue-700 underline hover:text-blue-900"
+          className="inline-block py-1 text-sm font-medium text-blue-700 underline hover:text-blue-900"
         >
           {dict.home.allCalculators}
         </Link>

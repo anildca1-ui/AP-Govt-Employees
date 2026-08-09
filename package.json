@@ -27,6 +27,7 @@
     "verify:footer": "node scripts/verify-footer.mjs",
     "verify:launch": "node scripts/verify-launch.mjs",
     "verify:calculators": "node scripts/verify-calculators.mjs",
+    "verify:mobile": "node scripts/verify-mobile.mjs",
     "dev:fake-db": "node scripts/fake-supabase.mjs",
     "dev:fake-models": "node scripts/fake-model-apis.mjs",
     "eval": "pnpm --filter @ap-emp-ai/rag eval",
