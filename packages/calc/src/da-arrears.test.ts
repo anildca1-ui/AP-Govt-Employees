@@ -91,6 +91,34 @@ describe("calculateDaArrears", () => {
     expect(result.total).toBe(1914);
   });
 
+  it("takes the difference between two whole-rupee bill lines, not of the percentages", () => {
+    // PLAN.md Part 4 writes the arrear as basic × (newDA − oldDA) / 100. That
+    // is a good shorthand and it is not what an employee is owed.
+    //
+    // DA appears on a pay bill as a whole-rupee figure. The arrear is the gap
+    // between what the bill should have said and what it did say, so both
+    // sides are rounded before they are subtracted. Rounding the difference of
+    // the percentages instead gives a different answer for about a quarter of
+    // the stages on the master scale.
+    //
+    // At basic 21,200, paid 30.03%, due 37.31%:
+    //   due  round(7,909.720) = 7,910
+    //   paid round(6,366.360) = 6,366   → 1,544
+    //   shorthand round(1,543.360)      = 1,543
+    //
+    // The other worked examples here happen to agree under both rules, so
+    // without this case a rewrite to the shorthand would pass the whole suite
+    // and quietly change what the site tells people they are owed.
+    const result = calculateDaArrears(
+      { basicPay: 21200, fromMonth: "2024-01", toMonth: "2024-01", paidDaPercent: 30.03 },
+      RATES,
+    );
+
+    expect(result.months[0]).toMatchObject({ paidDa: 6366, dueDa: 7910, difference: 1544 });
+    expect(result.total).toBe(1544);
+    expect(result.total).not.toBe(1543);
+  });
+
   it("splits cash and GPF/CPS exactly, with no rupee lost to rounding", () => {
     // The sanctioning GO decides the split, so it is an input. The two parts
     // must add back to the total exactly — a stray rupee in a pay bill costs

@@ -85,4 +85,18 @@ model key) and every page walked in a browser. What that established:
   number.
 
 ## BLOCKED
-(none yet)
+
+- **AAS 6-12-18-24 scheme not encoded** (PLAN.md Part 4, calculator 3). The FR
+  22-B fixation *mechanism* is built and tested — notional increment, then fix
+  at the next stage of the promotion scale, never below its floor. What is
+  missing is the scheme itself: which service lengths entitle an employee to
+  SG / SPP-I / SAPP-I / SPP-II, and the scale each carries. The calculator
+  therefore only serves someone who already knows their promotion scale's
+  minimum — the very thing they came to find out.
+  *What I tried:* looked for the thresholds in the corpus (empty), in
+  `config/` (absent), and in the calc package (only the mechanism).
+  *Why I stopped rather than filling them in:* CLAUDE.md rule 1 forbids a rate
+  with no `source_go`, and rule 2 forbids answering about AP rules from model
+  memory. Inventing plausible service lengths would be exactly the failure the
+  rules exist to prevent. Needs the governing GO ingested, or the figures from
+  someone accountable for them.
