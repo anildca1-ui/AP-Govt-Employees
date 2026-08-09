@@ -180,14 +180,22 @@ const BUILDERS: Record<CalculatorId, Builder> = {
         ratesFor<{ percent: number }>("DA").concat(ratesFor<{ percent: number }>("HRA")),
       );
 
+      // Earnings, then gross, then deductions, then net — the order a pay slip
+      // is read in. Gross used to be missing from the page entirely while the
+      // WhatsApp share quoted it, so a reader forwarded a figure they had never
+      // been shown and could not check. A row of em-dashes stood where it
+      // belongs, which in a table of amounts reads as missing data.
+      const isDeduction = (row: { key: string }) => row.key.startsWith("deduction:");
+      const line = (row: { key: string; label: string; percent?: number; amount: number }) =>
+        [breakdownLabel(dict, row), formatINR(row.amount)] as [string, string];
+
       return {
         body: (
           <Rows
             rows={[
-              ...result.breakdown.map(
-                (row) => [breakdownLabel(dict, row), formatINR(row.amount)] as [string, string],
-              ),
-              ["—", "—"],
+              ...result.breakdown.filter((row) => !isDeduction(row)).map(line),
+              [L(dict).gross, formatINR(result.gross)],
+              ...result.breakdown.filter(isDeduction).map(line),
               [L(dict).net, formatINR(result.net)],
             ]}
           />
@@ -225,7 +233,16 @@ const BUILDERS: Record<CalculatorId, Builder> = {
   fixation: (dict) => ({
     fields: [
       { name: "basicPay", label: dict.calculators.basicPay, defaultValue: "20000", required: true },
-      { name: "promotionMin", label: L(dict).promotionMin, defaultValue: "" },
+      // The AAS scheme itself is not encoded (TASKS.md BLOCKED): the thresholds
+      // that say which service length earns which grade need the governing GO.
+      // Saying so beside the field is the difference between a calculator that
+      // is honest about its limits and one that looks broken.
+      {
+        name: "promotionMin",
+        label: L(dict).promotionMin,
+        defaultValue: "",
+        help: L(dict).promotionMinHelp,
+      },
       {
         name: "notional",
         label: L(dict).notionalIncrement,

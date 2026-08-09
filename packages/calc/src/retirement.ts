@@ -237,10 +237,19 @@ export interface GratuityResult {
    * perDay above: the page shows it beside the total, and rounding it made
    * "₹72,211 / 2 × 33 half-months" fall ₹5.50 short of the total on screen.
    *
-   * Whether the governing GO computes gratuity from rounded monthly
-   * emoluments or from the exact figure is a rules question, not a display
-   * one — see TASKS.md BLOCKED. This changes only what is shown, never what
-   * is paid.
+   * Computed from the exact figure, not a rounded one — which differs from
+   * DA arrears on purpose, not by oversight.
+   *
+   * DA arrears subtracts two amounts that were really paid: DA appears on a
+   * monthly pay bill as whole rupees, so the arrear is the gap between two
+   * bill lines and both are rounded before subtracting. Gratuity is not a
+   * difference of past payments. It is one payment computed once from a
+   * notional emoluments figure, so it is rounded once, at the end. Rounding
+   * the intermediate as well would round twice for no reason and lose a few
+   * rupees on a lakh.
+   *
+   * Worth a second look when someone verifies the rates against the GO, but
+   * it needs no decision before then.
    */
   emoluments: number;
   halfMonthsEarned: number;
