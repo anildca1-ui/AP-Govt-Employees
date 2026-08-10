@@ -43,17 +43,28 @@ installed programs in a fresh window. Now:
 
 ```
 node -v
-corepack enable pnpm
-pnpm -v
 ```
 
-`node -v` should print v22 or higher, and `pnpm -v` should print 10.33.0 (the
-project pins its own version). If `corepack` is not recognised, this does the
-same job:
+It should print v22 or higher. Then allow PowerShell to run the installers'
+helper scripts — Windows blocks them by default, and without this both `npm`
+and `pnpm` fail with a red "running scripts is disabled" message. This changes
+the setting for your user account only, which is the safe, standard choice:
+
+```
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+Answer **Y** if it asks. Now install pnpm and confirm it answers:
 
 ```
 npm install -g pnpm
+pnpm -v
 ```
+
+(Skip `corepack enable` even if a guide elsewhere suggests it — on Windows it
+tries to write into `C:\Program Files`, which needs an administrator window,
+and the two commands above achieve the same thing without one. The project
+pins its own pnpm version, and pnpm switches to it automatically.)
 
 > Tip: paste commands exactly as written and nothing more. A note like
 > "← one time only" after a command is for your eyes, not for PowerShell —
