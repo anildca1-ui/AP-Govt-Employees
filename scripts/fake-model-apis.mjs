@@ -93,6 +93,50 @@ createServer((req, res) => {
     return;
   }
 
+  // The quiz's call — non-streaming, and checked AFTER the streaming route
+  // because "generateContent" is a substring of "streamGenerateContent".
+  // Answers in the real API's response shape with a quiz in the JSON format
+  // parseQuiz demands, including one deliberately malformed question (three
+  // options) and one with no source, so the route's drop-don't-repair rule is
+  // exercised on every run rather than only asserted in unit tests.
+  if (url.pathname.includes("generateContent")) {
+    req.resume();
+    const quiz = {
+      questions: [
+        {
+          question: "సర్వీసు పుస్తకంలో నమోదు ఎవరి బాధ్యత? (stand-in)",
+          options: ["కార్యాలయ అధిపతి", "ఉద్యోగి", "డీడీఓ", "ఎవరూ కాదు"],
+          correctIndex: 0,
+          source: "G.O.Ms.No.60, 20-10-2025",
+          explanation: "Stand-in explanation citing the retrieved chunk.",
+        },
+        {
+          question: "EOT పరీక్ష ఏ శాఖ ఉద్యోగులకు? (stand-in)",
+          options: ["దేవాదాయ", "రెవెన్యూ", "విద్య", "వైద్య"],
+          correctIndex: 0,
+          source: "G.O.Ms.No.101, 11-05-2022",
+        },
+        // Dropped by parseQuiz: only three options.
+        { question: "broken", options: ["a", "b", "c"], correctIndex: 0, source: "x" },
+        // Dropped by parseQuiz: no source (rule 2 — uncitable, unshowable).
+        {
+          question: "no source",
+          options: ["a", "b", "c", "d"],
+          correctIndex: 1,
+        },
+      ],
+    };
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(
+      JSON.stringify({
+        candidates: [
+          { content: { parts: [{ text: "```json\n" + JSON.stringify(quiz) + "\n```" }] } },
+        ],
+      }),
+    );
+    return;
+  }
+
   res.writeHead(404, { "content-type": "application/json" });
   res.end(JSON.stringify({ error: `no stand-in for ${url.pathname}` }));
 }).listen(PORT, () => console.log(`stand-in model APIs on :${PORT}`));

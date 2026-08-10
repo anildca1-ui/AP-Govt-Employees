@@ -17,7 +17,14 @@ import { clientKey, QUIZ_LIMIT, rateLimit } from "@/lib/rate-limit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const GEMINI = "https://generativelanguage.googleapis.com/v1beta/models";
+// Overridable for the same reason as the chat's: it lets this path run against
+// a stand-in without keys, or through a proxy, without a code change. The chat
+// honoured GEMINI_BASE_URL and this stayed hardcoded — which is why the quiz's
+// success path had never once been exercised anywhere. Same convention as
+// gemini-stream.ts: the override replaces the prefix up to and including
+// /v1beta/models, so one value redirects both call sites.
+const GEMINI =
+  process.env.GEMINI_BASE_URL ?? "https://generativelanguage.googleapis.com/v1beta/models";
 
 export async function POST(request: Request): Promise<Response> {
   const limited = rateLimit(`quiz:${clientKey(request)}`, QUIZ_LIMIT);
