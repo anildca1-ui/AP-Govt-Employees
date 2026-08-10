@@ -177,6 +177,33 @@ function CalculatorShellInner({ title, description, fields, dict, compute }: Cal
       {outcome !== null && (
         <section className="space-y-3 rounded-lg border border-slate-200 p-4">
           <h2 className="font-medium">{dict.calculators.result}</h2>
+
+          {/*
+            Print only: the inputs the figure was computed from. On screen the
+            form sits right above; on paper the form is hidden, and without
+            this a printout handed to a colleague or a DDO is a total with no
+            premises — it said ₹80,388 over 21 months and nowhere said from
+            which basic pay or paid-DA. Same defect as a share text quoting a
+            figure the page never showed.
+          */}
+          <dl className="hidden text-xs text-slate-600 print:block">
+            {fields
+              .filter((field) => (values[field.name] ?? "") !== "")
+              .map((field) => {
+                const raw = values[field.name] as string;
+                const shown =
+                  field.type === "select"
+                    ? (field.options?.find((option) => option.value === raw)?.label ?? raw)
+                    : raw;
+                return (
+                  <div key={field.name} className="flex gap-2">
+                    <dt>{field.label}:</dt>
+                    <dd className="font-medium">{shown}</dd>
+                  </div>
+                );
+              })}
+          </dl>
+
           {outcome.body}
 
           {/* Rule 1 reaches the calculators too: a figure has to name its GO. */}

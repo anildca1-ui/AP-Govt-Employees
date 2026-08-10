@@ -22,6 +22,8 @@
  *
  * Set CHROMIUM_PATH if Playwright's own browser download is not available.
  */
+/* global document -- the page.evaluate callbacks run inside Chromium, not
+   Node; `document` is real there even though this file lints as Node. */
 import { chromium } from "playwright";
 
 const base = (process.argv[2] ?? "http://localhost:3000").replace(/\/$/, "");
@@ -119,6 +121,49 @@ for (const slug of SLUGS) {
   } finally {
     await page.close();
   }
+}
+
+// ── Print output ────────────────────────────────────────────────────────────
+// Every calculator offers Print/PDF, and the artifact it produces is handed to
+// colleagues and DDOs. Checked on one representative page: the printed page
+// must state the inputs the figure was computed from (the form is hidden in
+// print, and a total with no premises cannot be checked by whoever receives
+// it), and must not spend paper on navigation chrome.
+{
+  const page = await browser.newPage();
+  await page.goto(`${base}/en/calculators/da-arrears`, { waitUntil: "networkidle" });
+  await page.locator("input[name=basicPay]").fill(AWKWARD_PAY);
+  await page.locator("input[name=paidDa]").fill("30.03");
+  await page.locator("button[type=submit]").first().click();
+  await page.waitForTimeout(700);
+  await page.emulateMedia({ media: "print" });
+
+  const printed = await page.evaluate(() => {
+    // Rendered boxes, not computed style: a child of a display:none parent
+    // keeps its own computed display, which is how a first version of this
+    // check reported hidden chrome as visible.
+    const visible = (el) => Boolean(el) && el.getClientRects().length > 0;
+    return {
+      inputs: visible(document.querySelector("section dl")),
+      nav: visible(document.querySelector("nav")),
+      form: visible(document.querySelector("form")),
+      text: document.body.innerText.replace(/\s+/g, " "),
+    };
+  });
+
+  const checks = [
+    [printed.inputs, "printout states the inputs it was computed from"],
+    [printed.text.includes(AWKWARD_PAY), `printout names the basic pay (${AWKWARD_PAY})`],
+    [!printed.nav, "printout carries no navigation chrome"],
+    [!printed.form, "printout hides the form"],
+    [/not an official Government/i.test(printed.text), "printout keeps the disclaimer"],
+  ];
+  console.log("\nPrint output (da-arrears):");
+  for (const [ok, what] of checks) {
+    console.log(`  ${ok ? "✓" : "✗"} ${what}`);
+    if (!ok) failures.push(`print: ${what}`);
+  }
+  await page.close();
 }
 
 await browser.close();

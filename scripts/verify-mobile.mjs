@@ -102,7 +102,40 @@ async function inspect(label) {
   }
 }
 
-console.log(`At ${WIDTH}px:`);
+// ── Wire weight ─────────────────────────────────────────────────────────────
+// The audience is on metered mobile data, so the first visit's transfer size
+// is a feature. Today it is ~375 kB, half of which is the Telugu font — the
+// irreducible cost of not rendering tofu on phones without a Telugu face
+// (fonts ~187 kB as one variable file per script, already cheaper than static
+// weights). The budget is set with headroom over today, not aspiration: it
+// exists to catch a regression like an accidental second font family or a
+// dependency landing in the shared bundle, not to start a diet.
+const WIRE_BUDGET_KB = 450;
+{
+  const finished = [];
+  const onFinished = async (request) => {
+    try {
+      finished.push((await request.sizes()).responseBodySize);
+    } catch {
+      // A request torn down before sizes() resolves (navigation, abort) has
+      // nothing to count.
+    }
+  };
+  page.on("requestfinished", onFinished);
+  await page.goto(`${base}/te`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(400);
+  page.off("requestfinished", onFinished);
+
+  const totalKb = finished.reduce((sum, bytes) => sum + Math.max(0, bytes), 0) / 1024;
+  console.log(`First visit to /te: ${totalKb.toFixed(0)} kB on the wire (budget ${WIRE_BUDGET_KB} kB)`);
+  if (totalKb > WIRE_BUDGET_KB) {
+    failures.push(
+      `/te first visit transfers ${totalKb.toFixed(0)} kB — over the ${WIRE_BUDGET_KB} kB budget`,
+    );
+  }
+}
+
+console.log(`\nAt ${WIDTH}px:`);
 for (const path of PAGES) {
   await page.goto(base + path, { waitUntil: "networkidle" });
   await inspect(path);

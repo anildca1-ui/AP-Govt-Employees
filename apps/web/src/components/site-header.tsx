@@ -26,9 +26,16 @@ export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary 
           </span>
           <span className="hidden text-xs text-slate-500 sm:block">{dict.site.tagline}</span>
         </Link>
-        <LanguageToggle locale={locale} label={dict.lang.switchTo} />
+        {/* Chrome, not content: on paper the toggle is a dead button and the
+            nav a row of dead links. The brand line stays — a printout should
+            say where it came from. */}
+        <div className="print:hidden">
+          <LanguageToggle locale={locale} label={dict.lang.switchTo} />
+        </div>
       </div>
-      <SiteNav items={navItems(locale, dict)} locale={locale} ariaLabel={dict.nav.primary} />
+      <div className="print:hidden">
+        <SiteNav items={navItems(locale, dict)} locale={locale} ariaLabel={dict.nav.primary} />
+      </div>
     </header>
   );
 }
