@@ -123,7 +123,12 @@ async function embedForBot(text: string): Promise<number[] | null> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
   try {
-    const response = await fetch("https://api.openai.com/v1/embeddings", {
+    // The third embedding call site, and the one the OPENAI_BASE_URL override
+    // missed: chat's and ingest's were made overridable and this stayed
+    // hardcoded, so a proxy or regional deployment would have worked on the
+    // website and silently not on the bots.
+    const base = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
+    const response = await fetch(`${base}/embeddings`, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
@@ -229,7 +234,7 @@ export async function logBotChat(
  * for the month-wise table, rather than trying to reproduce a table in a chat
  * bubble where it would be unreadable and unverifiable.
  */
-export function daCommand(args: string[], siteUrl: string): string {
+export function daCommand(args: string[], siteUrl: string | null): string {
   const basicPay = Number(args[0]);
   const paidDa = Number(args[1]);
   const fromMonth = args[2];
@@ -256,11 +261,15 @@ export function daCommand(args: string[], siteUrl: string): string {
       ? "\n\n⚠️ These rates have not yet been verified against the GO."
       : "";
 
+    // The link rides along only when the public address is known. The old
+    // fallback pointed at a domain nobody on this project is known to hold —
+    // a reply with no link beats a reply linking a stranger's server.
+    const table =
+      siteUrl === null ? "" : `\nMonth-wise table: ${siteUrl}/te/calculators/da-arrears`;
     return (
       `DA arrears for ${result.months.length} month(s)\n` +
       `Basic pay: ${formatINR(basicPay)}\n` +
-      `Total: ${formatINR(result.total)}${source}\n` +
-      `Month-wise table: ${siteUrl}/te/calculators/da-arrears${warning}`
+      `Total: ${formatINR(result.total)}${source}${table}${warning}`
     );
   } catch (error) {
     // The catch used to return any error's message verbatim, so a fault of ours
@@ -275,10 +284,11 @@ export function daCommand(args: string[], siteUrl: string): string {
     // verify the row before calculating" — instructions for whoever runs the
     // site, not for someone asking about their arrears.
     if (error instanceof RateNotFoundError) {
-      return (
-        "No DA rate is on record for that period yet.\n" +
-        `Covered periods are listed at ${siteUrl}/te/calculators/da-arrears`
-      );
+      const where =
+        siteUrl === null
+          ? ""
+          : `\nCovered periods are listed at ${siteUrl}/te/calculators/da-arrears`;
+      return `No DA rate is on record for that period yet.${where}`;
     }
 
     console.error("[bots] /da failed:", error);

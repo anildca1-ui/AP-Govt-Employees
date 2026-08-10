@@ -3,6 +3,7 @@ import { locales } from "@/i18n/config";
 import { CALCULATORS } from "@/lib/calculators/registry";
 import { DEPARTMENTAL_TESTS } from "@/lib/library/tests-hub";
 import { fetchRecent, publicClient } from "@/lib/library/queries";
+import { siteUrl } from "@/lib/site-url";
 
 /**
  * Sitemap (PLAN.md Phase 6).
@@ -12,7 +13,11 @@ import { fetchRecent, publicClient } from "@/lib/library/queries";
  * should land on our page for that order, which cites and links the original.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  // No known public address → an empty sitemap, not a fabricated one. The old
+  // localhost fallback shipped 52 localhost URLs to Google on any deploy that
+  // had not set NEXT_PUBLIC_SITE_URL, and nothing visible was wrong.
+  const base = siteUrl();
+  if (base === null) return [];
 
   const staticPaths = [
     "",

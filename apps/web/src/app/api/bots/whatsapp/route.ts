@@ -11,6 +11,7 @@ import {
   verifySignature,
   type WhatsAppMessage,
 } from "@/lib/bots/whatsapp-protocol";
+import { siteUrl as resolveSiteUrl } from "@/lib/site-url";
 import { intakeForwardedPdf, intakeReply, MAX_PDF_BYTES } from "@/lib/bots/ingest";
 
 /**
@@ -162,7 +163,7 @@ async function handleText(message: WhatsAppMessage): Promise<void> {
   const body = (message.text?.body ?? "").trim();
   if (body === "") return;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ap-emp-ai.in";
+  const siteUrl = resolveSiteUrl();
 
   if (body.toLowerCase().startsWith("/da")) {
     const args = body.split(/\s+/).slice(1);

@@ -15,6 +15,7 @@ import {
   isMonitoredChannel,
 } from "@/lib/bots/channel-monitor";
 import { InvalidQuestionError } from "@/lib/chat/service";
+import { siteUrl as resolveSiteUrl } from "@/lib/site-url";
 
 /**
  * Telegram webhook (PLAN.md Phase 4).
@@ -49,7 +50,7 @@ let cached: WebhookHandler | null = null;
 
 function buildBot() {
   const bot = new Bot(requiredEnv("TELEGRAM_BOT_TOKEN"));
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://ap-emp-ai.in";
+  const siteUrl = resolveSiteUrl();
 
   // Ahead of every handler, so nothing that costs money or review attention
   // runs first. A valid secret token proves the update came through Telegram,

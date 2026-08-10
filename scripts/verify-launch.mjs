@@ -194,6 +194,41 @@ console.log("\n3. Unmonetized — no third-party requests (runtime)");
   }
 }
 
+// ── 3b. What crawlers are told ──────────────────────────────────────────────
+console.log("\n3b. robots.txt and sitemap.xml publish no address that is not real (runtime)");
+{
+  const page = await browser.newPage();
+
+  const robots = await page.goto(`${base}/robots.txt`).then((r) => r.text());
+  const sitemap = await page.goto(`${base}/sitemap.xml`).then((r) => r.text());
+
+  // This script runs against a build with no configuration — the exact state
+  // that used to hand Google 52 localhost URLs while every page looked fine.
+  // With NEXT_PUBLIC_SITE_URL set, real absolute URLs here are correct; with
+  // nothing set, the only honest sitemap is an empty one.
+  const leaks = (text) => [...text.matchAll(/https?:\/\/(localhost|127\.0\.0\.1)[^\s<"]*/g)];
+  check(
+    leaks(robots).length === 0,
+    "crawlers",
+    leaks(robots).length === 0
+      ? "robots.txt names no localhost address"
+      : `robots.txt leaks ${leaks(robots)[0][0]}`,
+  );
+  check(
+    leaks(sitemap).length === 0,
+    "crawlers",
+    leaks(sitemap).length === 0
+      ? "sitemap.xml names no localhost address"
+      : `sitemap.xml leaks ${leaks(sitemap).length} localhost URL(s)`,
+  );
+  check(
+    /Disallow:\s*\/api\//.test(robots),
+    "crawlers",
+    "robots.txt still keeps crawlers out of /api/",
+  );
+  await page.close();
+}
+
 await browser.close();
 
 // ── 4. The banner on every page ─────────────────────────────────────────────
