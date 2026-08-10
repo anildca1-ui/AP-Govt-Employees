@@ -62,7 +62,12 @@ export default async function AdminDetailPage({
 
   return (
     <div className="space-y-6">
-      <Link href={`/${locale}/admin`} className="text-sm text-slate-600 underline">
+      {/* py-1 keeps both of these at the 24px tap minimum (WCAG 2.2) — the
+          reviewer approves GOs from a phone like everyone else. */}
+      <Link
+        href={`/${locale}/admin`}
+        className="inline-block py-1 text-sm text-slate-600 underline"
+      >
         ← {dict.admin.backToQueue}
       </Link>
 
@@ -77,7 +82,7 @@ export default async function AdminDetailPage({
             href={row.raw_url}
             target="_blank"
             rel="noreferrer"
-            className="inline-block text-sm underline"
+            className="inline-block py-1 text-sm underline"
           >
             {dict.admin.pdf}
           </a>
