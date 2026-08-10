@@ -21,13 +21,69 @@ This project was built with Claude Code running in a browser sandbox. On your
 own PC two things are different, and both are good news:
 
 **1. Nothing needs merging.** This branch is the repository's default branch,
-so a plain clone brings everything:
+so a plain clone brings everything.
+
+### First, the two programs the project runs on (one-time)
+
+The project needs **Node.js** (the engine) and **pnpm** (the installer). In
+PowerShell, check what you have:
+
+```
+node -v
+```
+
+If that prints an error, install Node.js first — either of these works:
+
+- In PowerShell: `winget install OpenJS.NodeJS.LTS`
+- Or go to https://nodejs.org and run the green **LTS** installer with all the
+  default choices.
+
+**Then close PowerShell and open a new one** — Windows only notices newly
+installed programs in a fresh window. Now:
+
+```
+node -v
+corepack enable pnpm
+pnpm -v
+```
+
+`node -v` should print v22 or higher, and `pnpm -v` should print 10.33.0 (the
+project pins its own version). If `corepack` is not recognised, this does the
+same job:
+
+```
+npm install -g pnpm
+```
+
+> Tip: paste commands exactly as written and nothing more. A note like
+> "← one time only" after a command is for your eyes, not for PowerShell —
+> pasting it along makes the command fail.
+
+### Then the project itself
 
 ```
 git clone https://github.com/anildca1-ui/AP-Govt-Employees.git
 cd AP-Govt-Employees
 pnpm install
 ```
+
+(You have already cloned? Just `cd AP-Govt-Employees` and run `git pull` to
+pick up the latest, then `pnpm install`.)
+
+### A Windows note about the checking scripts
+
+`pnpm test`, `pnpm build` and `pnpm lint` work in PowerShell directly. The two
+all-in-one wrappers — `pnpm gate` and `pnpm verify:all` — are shell scripts,
+and Windows runs those through **Git Bash**, which was installed on your PC
+along with Git. Open the Start menu, type "Git Bash", and run them there:
+
+```
+cd ~/AP-Govt-Employees
+pnpm gate
+pnpm verify:all
+```
+
+Everything else in this guide works the same in PowerShell.
 
 **2. The internet is open now.** The sandbox could not reach any AP government
 website, which is why the GO library is still empty. Your PC can. Once `.env`
