@@ -123,6 +123,38 @@ for (const slug of SLUGS) {
   }
 }
 
+// ── The prefill journey ─────────────────────────────────────────────────────
+// The dashboard links to calculators with the profile's values in the query
+// string, and that link is also what people share. Two things must hold: the
+// parameter actually prefills the field, and switching language keeps it —
+// the toggle used to rewrite the path and drop the query, so a shared
+// prefilled link lost its numbers the moment the reader pressed English.
+{
+  const page = await browser.newPage();
+  await page.goto(`${base}/te/calculators/da-arrears?basicPay=${AWKWARD_PAY}`, {
+    waitUntil: "networkidle",
+  });
+  const prefilled = await page.locator("input[name=basicPay]").inputValue();
+
+  await page.locator("header button").filter({ hasText: "English" }).first().click();
+  await page.waitForTimeout(900);
+  const after = new URL(page.url());
+  const kept = after.searchParams.get("basicPay") === AWKWARD_PAY;
+  const path = after.pathname === "/en/calculators/da-arrears";
+
+  const checks = [
+    [prefilled === AWKWARD_PAY, `?basicPay= prefills the field (got "${prefilled}")`],
+    [path, `toggle keeps the page (${after.pathname})`],
+    [kept, "toggle keeps the query string"],
+  ];
+  console.log("\nPrefill journey (da-arrears):");
+  for (const [ok, what] of checks) {
+    console.log(`  ${ok ? "✓" : "✗"} ${what}`);
+    if (!ok) failures.push(`prefill: ${what}`);
+  }
+  await page.close();
+}
+
 // ── Print output ────────────────────────────────────────────────────────────
 // Every calculator offers Print/PDF, and the artifact it produces is handed to
 // colleagues and DDOs. Checked on one representative page: the printed page
