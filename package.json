@@ -28,6 +28,7 @@
     "verify:launch": "node scripts/verify-launch.mjs",
     "verify:calculators": "node scripts/verify-calculators.mjs",
     "verify:mobile": "node scripts/verify-mobile.mjs",
+    "verify:all": "./scripts/verify-all.sh",
     "dev:fake-db": "node scripts/fake-supabase.mjs",
     "dev:fake-models": "node scripts/fake-model-apis.mjs",
     "eval": "pnpm --filter @ap-emp-ai/rag eval",

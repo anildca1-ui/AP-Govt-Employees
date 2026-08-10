@@ -14,9 +14,14 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 DB="${SCHEMA_CHECK_DB:-ap_emp_ai_schema_check}"
-export PGHOST="${PGHOST:-/tmp}"
-export PGPORT="${PGPORT:-55432}"
+# Defaults target the Supabase local stack (`pnpm db:start`), which is what a
+# development PC actually has. They were previously a bare cluster on a /tmp
+# socket — the sandbox this repo was first built in — which no normal machine
+# runs. CI is unaffected either way: the workflow sets all of these explicitly.
+export PGHOST="${PGHOST:-127.0.0.1}"
+export PGPORT="${PGPORT:-54322}"
 export PGUSER="${PGUSER:-postgres}"
+export PGPASSWORD="${PGPASSWORD:-postgres}"
 
 psql -q -d postgres -v ON_ERROR_STOP=1 -c "drop database if exists $DB;" -c "create database $DB;"
 export PGDATABASE="$DB"

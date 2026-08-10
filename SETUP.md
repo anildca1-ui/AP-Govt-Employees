@@ -15,6 +15,54 @@ would unlock.
 
 ---
 
+## Running Claude Code on your own PC (moving off the web version)
+
+This project was built with Claude Code running in a browser sandbox. On your
+own PC two things are different, and both are good news:
+
+**1. Nothing needs merging.** This branch is the repository's default branch,
+so a plain clone brings everything:
+
+```
+git clone https://github.com/anildca1-ui/AP-Govt-Employees.git
+cd AP-Govt-Employees
+pnpm install
+```
+
+**2. The internet is open now.** The sandbox could not reach any AP government
+website, which is why the GO library is still empty. Your PC can. Once `.env`
+has your database values (Steps 1–3) and `SCRAPER_CONTACT_EMAIL` is a real
+address you monitor, these commands — which were impossible before — will work:
+
+```
+pnpm --filter @ap-emp-ai/ingest fetch:seeds     # download the 15 known GO PDFs
+pnpm --filter @ap-emp-ai/ingest scrape:goir 30  # crawl goir.ap.gov.in politely
+pnpm --filter @ap-emp-ai/ingest index:documents # make approved GOs searchable
+```
+
+Every downloaded GO lands in the review queue for you to approve — nothing
+publishes itself.
+
+One-time setup on a new machine, so the verification suite can drive a
+browser:
+
+```
+pnpm exec playwright install chromium
+```
+
+Then two commands tell you the project is healthy, exactly as they did in the
+sandbox:
+
+```
+pnpm gate          # lint, types, all 633 tests, build
+pnpm verify:all    # starts the site and checks it in a real browser
+```
+
+Everything else in this file is unchanged — the steps below work the same on a
+PC as they did on the web.
+
+---
+
 ## What you are building
 
 The portal has parts that switch on independently. You do **not** need all of
