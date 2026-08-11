@@ -15,9 +15,14 @@ import { describe, expect, it } from "vitest";
  * who has already run the project once, which is everyone who could have
  * caught it.
  *
- * `test` and `typecheck` already built first; `dev` did not. This pins all
- * three, because the failure mode is silent for the person making the change
- * and total for the person cloning.
+ * The first fix used `pnpm --filter "./packages/*" build`, and that was not
+ * enough: a directory glob that matches nothing is not an error, so on Windows
+ * it built zero packages, exited 0, and dev started into the same module error.
+ * The build now goes through scripts/build-packages.mjs, which filters by
+ * package NAME and then checks each dist/index.js exists.
+ *
+ * This pins the three scripts to that builder, because the failure mode is
+ * silent for the person making the change and total for the person cloning.
  */
 const scripts = (
   JSON.parse(
@@ -26,10 +31,12 @@ const scripts = (
 ).scripts;
 
 describe("root scripts build the workspace packages before using them", () => {
-  it.each(["dev", "test", "typecheck"])("%s builds packages/* first", (name) => {
+  it.each(["dev", "test", "typecheck"])("%s builds the packages first", (name) => {
     const script = scripts[name];
     expect(script, `${name} is missing from package.json`).toBeDefined();
-    expect(script).toMatch(/--filter\s+"?\.\/packages\/\*"?\s+build/);
+    // The verifying builder specifically — a bare pnpm --filter can match
+    // nothing and pass, which is the bug this exists to prevent.
+    expect(script).toMatch(/node\s+scripts\/build-packages\.mjs/);
   });
 
   it("build compiles the whole workspace, packages included", () => {

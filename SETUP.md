@@ -227,7 +227,14 @@ pnpm dev
 ```
 
 `pnpm dev` compiles the shared calculation code before it starts the site, so
-the first run takes a few seconds longer than later ones. Wait for **Ready**,
+the first run takes a few seconds longer than later ones. You should see
+`✓ workspace packages built: calc, rag, ingest` scroll past. If that line is
+missing and a calculator page later says *Module not found*, run the compile
+on its own to see why:
+
+```
+pnpm packages:build
+``` Wait for **Ready**,
 then open **http://localhost:3000**. The first page you click also compiles on
 demand — that one can take up to a minute; every visit after is instant.
 
