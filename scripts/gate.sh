@@ -28,6 +28,9 @@ step() {
 # rates JSON and the seed migration disagree, the figure the calculator shows a
 # user and the figure the database holds are different numbers.
 step "rates seed" node scripts/generate-rates-seed.mjs --check
+# A stale bundle would build yesterday's schema for anyone following SETUP.md,
+# with no sign that it had.
+step "db bundle"  node scripts/bundle-migrations.mjs --check
 step "lint"      pnpm lint
 step "typecheck" pnpm typecheck
 step "test"      pnpm test

@@ -36,6 +36,12 @@ jobs:
       - name: Rates seed matches its config
         run: node scripts/generate-rates-seed.mjs --check
 
+      # SETUP.md tells a non-programmer to paste supabase/all-migrations.sql
+      # into the SQL Editor. If it has drifted from supabase/migrations/, they
+      # build the wrong schema and nothing says so.
+      - name: Migration bundle matches the migrations
+        run: node scripts/bundle-migrations.mjs --check
+
       - name: Lint
         run: pnpm lint
 

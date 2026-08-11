@@ -148,28 +148,7 @@ alone beat every site this is meant to replace.
 
 ---
 
-## Step 1 — Make a copy of the settings file
-
-In the project folder:
-
-```
-cp .env.example .env
-```
-
-On Windows PowerShell, that command is:
-
-```
-copy .env.example .env
-```
-
-`.env` is where every setting goes. It is never uploaded to GitHub — it holds
-your passwords and keys, and it is deliberately excluded.
-
-Open it in any text editor. You will paste values into it as you go.
-
----
-
-## Step 2 — Create the database (free)
+## Step 1 — Create the database (free)
 
 1. Go to **https://supabase.com** and create an account.
 2. Click **New project**. Give it any name. Choose the region closest to Andhra
@@ -177,37 +156,63 @@ Open it in any text editor. You will paste values into it as you go.
 3. Set a database password when asked, and save it somewhere safe.
 4. Wait for the project to finish setting up. This takes a couple of minutes.
 
-Now collect three values. In your Supabase project, go to
-**Project Settings → API**:
+Then open **Project Settings → API** and leave that page open. Three values on
+it are what the next step asks for:
 
-| On that page | Paste into `.env` as |
-|---|---|
-| Project URL | `NEXT_PUBLIC_SUPABASE_URL` |
-| `anon` `public` key | `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| `service_role` key | `SUPABASE_SERVICE_ROLE_KEY` |
+- **Project URL**
+- **anon public** key
+- **service_role** key
 
-> The `service_role` key bypasses every security rule. It belongs only in
-> `.env` and in your hosting provider's settings. Never put it in a message, a
-> screenshot, or the website itself.
+> The `service_role` key bypasses every security rule. It belongs only in your
+> settings file and in your hosting provider's settings. Never put it in a
+> message, a screenshot, or the website itself.
 
-While you are in `.env`, invent a password for the admin page and put it in
-`ADMIN_TOKEN`. This is what you will type to reach `/admin`, where Government
-Orders wait for your approval. Make it long; anyone with it can approve
-documents.
+---
+
+## Step 2 — Let the setup command write your settings
+
+Back in PowerShell:
+
+```
+pnpm setup:env
+```
+
+It asks for those three values one at a time — by the same names they have on
+the Supabase page — writes the settings file for you, and invents a strong
+admin password so you do not have to think one up.
+
+**Copy that password somewhere safe when it appears.** It is what protects the
+page where Government Orders get approved, and it is not shown again.
+
+> The settings file is called `.env`. It holds your keys and is never uploaded
+> to GitHub — that exclusion is deliberate. To edit it by hand later,
+> `notepad .env` opens it.
 
 ---
 
 ## Step 3 — Create the tables
 
-The database is empty. It needs the tables the portal expects.
+The database is empty. It needs the tables the portal expects. This is one
+copy and one paste.
 
-1. In Supabase, open **SQL Editor** in the left sidebar.
-2. Open the folder `supabase/migrations/` in this project. It contains six
-   files whose names begin with numbers.
-3. **In number order**, open each file, copy all of it, paste it into the SQL
-   Editor, and press **Run**. Wait for "Success" before the next one.
+1. Open the file **`supabase/all-migrations.sql`** in this project. In
+   PowerShell, this opens it in Notepad:
 
-Order matters — each builds on the one before.
+   ```
+   notepad supabase\all-migrations.sql
+   ```
+
+2. Select all of it (`Ctrl+A`) and copy (`Ctrl+C`).
+3. In Supabase, open **SQL Editor** in the left sidebar, paste (`Ctrl+V`), and
+   press **Run**.
+4. Wait for **Success**.
+
+That single file contains every table, index and security rule, already in the
+right order — you do not have to manage the order yourself.
+
+> Run it once. If you run it a second time you will see red errors saying
+> things *"already exist"*. That is not damage: it means the database is
+> already built, and the second run simply stops.
 
 Check it worked:
 
