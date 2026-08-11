@@ -42,7 +42,7 @@ try {
 
 // --output env first: plain KEY="value" lines, no colour, no table layout.
 // Parsing the pretty output failed twice on a real machine; the CLI is allowed
-// to restyle it and does. The table reader below is only for older CLIs.
+// to restyle it and does.
 let keys = null;
 try {
   keys = parseSupabaseEnv(
@@ -52,23 +52,28 @@ try {
   keys = null;
 }
 
-let output = "";
-try {
-  output = execSync("pnpm exec supabase status", { cwd: root, encoding: "utf8" });
-  process.stdout.write(`\n${output}`);
-} catch {
-  console.error(
-    "\nCould not start the local database.\n\n" +
-      "The usual cause is Docker Desktop not being open. This needs it running:\n" +
-      "start Docker Desktop, wait until it says it is running, then try again.\n\n" +
-      (started ? "" : "The start command also reported a problem — its output is above.\n"),
-  );
-  process.exit(1);
-}
+const incomplete = (k) => k === null || k.url === null || k.anon === null || k.service === null;
 
-if (keys === null || keys.url === null || keys.anon === null || keys.service === null) {
+// Only when that failed. `start` has already printed this block once, and
+// printing it again — which it used to, unconditionally — buries the result
+// under a second screen of tables the reader has just scrolled past.
+if (incomplete(keys)) {
+  let output = "";
+  try {
+    output = execSync("pnpm exec supabase status", { cwd: root, encoding: "utf8" });
+    process.stdout.write(`\n${output}`);
+  } catch {
+    console.error(
+      "\nCould not start the local database.\n\n" +
+        "The usual cause is Docker Desktop not being open. This needs it running:\n" +
+        "start Docker Desktop, wait until it says it is running, then try again.\n\n" +
+        (started ? "" : "The start command also reported a problem — its output is above.\n"),
+    );
+    process.exit(1);
+  }
   keys = parseSupabaseStart(output);
 }
+
 const missing = ["url", "anon", "service"].filter((name) => keys[name] === null);
 if (missing.length > 0) {
   // Say what was actually seen. Twice now this failed with nothing to go on but

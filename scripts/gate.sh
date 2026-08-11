@@ -31,6 +31,10 @@ step "rates seed" node scripts/generate-rates-seed.mjs --check
 # A stale bundle would build yesterday's schema for anyone following SETUP.md,
 # with no sign that it had.
 step "db bundle"  node scripts/bundle-migrations.mjs --check
+# Runs setup-local.mjs itself against a stand-in CLI. Its parser was unit
+# tested three times and shipped broken three times; only running the script
+# catches that.
+step "setup:local" ./scripts/test-setup-local.sh
 step "lint"      pnpm lint
 step "typecheck" pnpm typecheck
 step "test"      pnpm test
