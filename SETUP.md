@@ -15,6 +15,40 @@ would unlock.
 
 ---
 
+## Getting Claude to run these commands for you
+
+If you are reading this in the web version of Claude, it is running in a
+datacentre — a different computer from yours. It cannot see `C:\Users\...`,
+cannot reach a database on your machine, and cannot type into your PowerShell.
+That is why it keeps handing you commands to paste.
+
+**Install Claude Code on this PC and that stops.** It then runs the commands
+itself, reads the errors itself, and fixes them without the copy-paste loop.
+
+You already have Node.js, so:
+
+```
+npm install -g @anthropic-ai/claude-code
+```
+
+Then, in the project folder:
+
+```
+cd C:\Users\anild\AP-Govt-Employees
+claude
+```
+
+Sign in when it asks. From then on you can simply say *"finish the setup"* or
+*"the calculator is broken, fix it"*, and it will do the work on this machine.
+
+There is also a desktop app if you prefer clicking to typing — see
+https://code.claude.com/docs for both options.
+
+> Everything already done still applies. It is the same project, the same
+> files, the same Git history — only who types the commands changes.
+
+---
+
 ## Running Claude Code on your own PC (moving off the web version)
 
 This project was built with Claude Code running in a browser sandbox. On your
