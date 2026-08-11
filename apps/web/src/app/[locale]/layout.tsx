@@ -73,7 +73,23 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${telugu.variable} ${latin.variable}`}>
-      <body className="flex min-h-dvh flex-col bg-white text-slate-900 antialiased">
+      {/*
+        Browser extensions add attributes to <body> before React hydrates —
+        Grammarly writes data-gr-ext-installed, password managers and
+        translators do the same. React sees the server's HTML and the browser's
+        HTML disagree and warns, on every page load, in development.
+
+        Nothing is wrong and no visitor is affected; the extension runs on the
+        reader's own machine. But a warning that is always there is a warning
+        nobody reads, and this is the same overlay that would report a real
+        hydration bug. Suppressing it here covers this element's own attributes
+        only — a genuine mismatch in the header, the calculators or anywhere
+        else still reports normally.
+      */}
+      <body
+        suppressHydrationWarning
+        className="flex min-h-dvh flex-col bg-white text-slate-900 antialiased"
+      >
         <SiteHeader locale={locale} dict={dict} />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
         <SiteFooter locale={locale} dict={dict} />
