@@ -148,7 +148,58 @@ alone beat every site this is meant to replace.
 
 ---
 
-## Step 1 — Create the database (free)
+## Two ways to get a database — pick one
+
+The portal needs a database. There are two routes, and you can switch later.
+
+| | **A — On your own PC** | **B — Supabase cloud** |
+|---|---|---|
+| Account needed | **None** | Free Supabase account |
+| Cost | Free forever | Free tier |
+| Command | `pnpm setup:local` | `pnpm setup:env` |
+| Also needs | Docker Desktop installed | nothing |
+| Can the public reach it? | **No** — only this PC | **Yes** |
+| Good for | Building and checking everything | Actually launching |
+
+**Option A is the honest answer to "is there a free local alternative?"** — it
+is Supabase's own software running on your machine, in Docker, with the same
+Postgres, the same API and the same auth. It costs nothing, needs no account,
+and is already configured in this project. Everything works: the GO library,
+the admin review queue, sign-in, the chat. The one thing it cannot do is serve
+other people, because it lives on your computer and stops when you shut down.
+
+If you want to see the whole site working today with no signups, do Option A.
+When you are ready for AP employees to use it, do Option B — nothing you build
+is lost, it is one command to point at the cloud instead.
+
+### Option A — the database on your PC
+
+1. Install **Docker Desktop** from https://www.docker.com/products/docker-desktop
+   and open it. Wait until it says it is running.
+2. Then:
+
+   ```
+   pnpm setup:local
+   ```
+
+That starts the database, applies every table, writes your settings file and
+prints an admin password. No values to copy. First run takes a few minutes
+while it downloads.
+
+Then skip to **Step 4** — Steps 1 to 3 are the cloud route, and this has
+already done all three.
+
+Later, `pnpm db:stop` shuts it down; `pnpm setup:local` starts it again.
+
+> Other databases people suggest — Neon, Railway, plain Postgres — give you
+> only the storage part. This portal also uses Supabase's API layer, its
+> row-level security and its phone sign-in, so those would each need code
+> rewritten. Supabase-on-your-PC is the free alternative that needs no changes
+> at all.
+
+---
+
+## Step 1 — Create the database in the cloud (Option B)
 
 1. Go to **https://supabase.com** and create an account.
 2. Click **New project**. Give it any name. Choose the region closest to Andhra

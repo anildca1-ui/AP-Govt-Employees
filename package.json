@@ -15,6 +15,7 @@
     "packages:build": "node scripts/build-packages.mjs",
     "setup:check": "node scripts/setup-check.mjs",
     "setup:env": "node scripts/setup-env.mjs",
+    "setup:local": "node scripts/setup-local.mjs",
     "rates:worksheet": "node scripts/rates-worksheet.mjs",
     "rates:generate": "node scripts/generate-rates-seed.mjs",
     "test": "node scripts/build-packages.mjs && vitest run",

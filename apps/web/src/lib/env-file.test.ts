@@ -4,10 +4,11 @@ import { describe, expect, it } from "vitest";
 // silenced, so a signature change is still caught.
 import * as envFile from "../../../../scripts/lib/env-file.mjs";
 
-const { buildEnv, clean, warningsFor } = envFile as {
+const { buildEnv, clean, warningsFor, parseSupabaseStart } = envFile as {
   buildEnv: (example: string, values: Record<string, string>) => string;
   clean: (value: string) => string;
   warningsFor: (input: { url: string; anon: string; service: string }) => string[];
+  parseSupabaseStart: (output: string) => Record<string, string | null>;
 };
 
 /**
@@ -106,5 +107,54 @@ describe("warningsFor", () => {
 
   it("flags the same key pasted into both slots", () => {
     expect(warningsFor({ ...good, service: good.anon })[0]).toMatch(/identical/);
+  });
+});
+
+describe("parseSupabaseStart", () => {
+  // The CLI's real summary block, right-aligned labels and all.
+  const classic = `Started supabase local development setup.
+
+         API URL: http://127.0.0.1:54321
+     GraphQL URL: http://127.0.0.1:54321/graphql/v1
+          DB URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      Studio URL: http://127.0.0.1:54323
+    Inbucket URL: http://127.0.0.1:54324
+      JWT secret: super-secret-jwt-token-with-at-least-32-characters-long
+        anon key: eyJhbGci.anon.token
+service_role key: eyJhbGci.service.token
+`;
+
+  it("reads the URL and both keys", () => {
+    expect(parseSupabaseStart(classic)).toMatchObject({
+      url: "http://127.0.0.1:54321",
+      anon: "eyJhbGci.anon.token",
+      service: "eyJhbGci.service.token",
+      studio: "http://127.0.0.1:54323",
+    });
+  });
+
+  it("never mistakes the JWT secret for a key", () => {
+    // They sit adjacent in the output and a loose match would take the wrong
+    // one, producing an .env that looks filled in and cannot authenticate.
+    const parsed = parseSupabaseStart(classic);
+    expect(parsed.anon).not.toContain("super-secret");
+    expect(parsed.service).not.toContain("super-secret");
+  });
+
+  it("accepts the CLI's newer key names", () => {
+    // Renamed upstream: an unrecognised label would silently write empty keys.
+    const renamed = `         API URL: http://127.0.0.1:54321
+publishable key: sb_publishable_abc
+     secret key: sb_secret_xyz
+`;
+    expect(parseSupabaseStart(renamed)).toMatchObject({
+      url: "http://127.0.0.1:54321",
+      anon: "sb_publishable_abc",
+      service: "sb_secret_xyz",
+    });
+  });
+
+  it("reports null rather than guessing when a label is absent", () => {
+    expect(parseSupabaseStart("nothing useful here").anon).toBeNull();
   });
 });

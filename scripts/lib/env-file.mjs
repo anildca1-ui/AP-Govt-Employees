@@ -41,3 +41,35 @@ export function warningsFor({ url, anon, service }) {
   }
   return warnings;
 }
+
+/**
+ * Reads the keys out of `supabase start`'s summary.
+ *
+ * The CLI prints a block of "label: value" lines. Parsing it is what makes the
+ * local path a single command instead of "copy these three long strings from
+ * the terminal into a file" — which is the same error-prone copying the cloud
+ * path has, except the strings are longer.
+ *
+ * Two naming schemes are accepted because the CLI renamed them: older builds
+ * print "anon key" / "service_role key", newer ones "publishable key" /
+ * "secret key". Both are recognised so an upgrade does not silently produce an
+ * .env with empty keys.
+ */
+export function parseSupabaseStart(output) {
+  const value = (...labels) => {
+    for (const label of labels) {
+      // Labels are right-aligned with leading spaces, hence the loose start.
+      const match = new RegExp(`^\\s*${label}\\s*:\\s*(\\S+)\\s*$`, "im").exec(output);
+      if (match !== null) return match[1];
+    }
+    return null;
+  };
+
+  return {
+    url: value("API URL"),
+    anon: value("anon key", "publishable key"),
+    service: value("service_role key", "secret key"),
+    dbUrl: value("DB URL"),
+    studio: value("Studio URL"),
+  };
+}
