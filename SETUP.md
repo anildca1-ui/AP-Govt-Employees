@@ -236,9 +236,14 @@ on its own to see why:
 pnpm packages:build
 ```
 
-Wait for **Ready**, then open **http://localhost:3000**. The first page you
-click also compiles on demand — that one can take up to a minute; every visit
-after is instant.
+Wait for **Ready**, then open the address it prints next to **Local:** —
+usually **http://localhost:3000**. If an older copy of the site is still
+running, it will say something like *"Port 3000 is in use ... using available
+port 3001 instead"* and print `http://localhost:3001`. Use the address it
+actually prints; the old port is still serving the older code.
+
+The first page you click also compiles on demand — that one can take up to a
+minute; every visit after is instant.
 
 Leave that window open: it *is* the website. Closing it, or pressing `Ctrl+C`
 in it, switches the site off.
