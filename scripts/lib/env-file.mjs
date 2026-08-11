@@ -43,33 +43,51 @@ export function warningsFor({ url, anon, service }) {
 }
 
 /**
- * Reads the keys out of `supabase start`'s summary.
+ * Reads the keys out of `supabase start` / `supabase status`.
  *
- * The CLI prints a block of "label: value" lines. Parsing it is what makes the
- * local path a single command instead of "copy these three long strings from
- * the terminal into a file" — which is the same error-prone copying the cloud
- * path has, except the strings are longer.
+ * Two output shapes, because the CLI changed and both are in the wild:
  *
- * Two naming schemes are accepted because the CLI renamed them: older builds
- * print "anon key" / "service_role key", newer ones "publishable key" /
- * "secret key". Both are recognised so an upgrade does not silently produce an
- * .env with empty keys.
+ *   Older:  `        anon key: eyJhbGci...`     — right-aligned "label: value"
+ *   Newer:  `│ Publishable │ sb_publishable_... │` — box-drawing tables
+ *
+ * The first version of this parser handled only the older shape, and its tests
+ * passed because the fixture was written from memory rather than from a real
+ * run. On a real machine the CLI printed tables, nothing matched, and it
+ * reported "keys could not be read" after a five-minute download. The fixtures
+ * below are now copied verbatim from actual output.
+ *
+ * Labels are matched exactly after trimming, which is what keeps the database's
+ * `URL` row distinct from the API table's `Project URL`.
  */
 export function parseSupabaseStart(output) {
-  const value = (...labels) => {
+  /** Every `│ label │ value │` row, and every `label: value` line. */
+  const cells = new Map();
+
+  for (const line of output.split("\n")) {
+    const row = /^\s*│\s*(.+?)\s*│\s*(.+?)\s*│\s*$/.exec(line);
+    if (row !== null) {
+      // Header rows ("🔑 Authentication Keys") have no second column and are
+      // filtered out by the two-cell shape itself.
+      if (!cells.has(row[1])) cells.set(row[1], row[2]);
+      continue;
+    }
+    const pair = /^\s*([A-Za-z_][\w ./-]*?)\s*:\s*(\S+)\s*$/.exec(line);
+    if (pair !== null && !cells.has(pair[1])) cells.set(pair[1], pair[2]);
+  }
+
+  const first = (...labels) => {
     for (const label of labels) {
-      // Labels are right-aligned with leading spaces, hence the loose start.
-      const match = new RegExp(`^\\s*${label}\\s*:\\s*(\\S+)\\s*$`, "im").exec(output);
-      if (match !== null) return match[1];
+      const value = cells.get(label);
+      if (value !== undefined) return value;
     }
     return null;
   };
 
   return {
-    url: value("API URL"),
-    anon: value("anon key", "publishable key"),
-    service: value("service_role key", "secret key"),
-    dbUrl: value("DB URL"),
-    studio: value("Studio URL"),
+    url: first("Project URL", "API URL"),
+    anon: first("Publishable", "publishable key", "anon key"),
+    service: first("Secret", "secret key", "service_role key"),
+    dbUrl: first("URL", "DB URL"),
+    studio: first("Studio", "Studio URL"),
   };
 }
