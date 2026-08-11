@@ -156,6 +156,12 @@ In the project folder:
 cp .env.example .env
 ```
 
+On Windows PowerShell, that command is:
+
+```
+copy .env.example .env
+```
+
 `.env` is where every setting goes. It is never uploaded to GitHub — it holds
 your passwords and keys, and it is deliberately excluded.
 
@@ -220,8 +226,15 @@ pnpm install
 pnpm dev
 ```
 
-Open **http://localhost:3000**. You should see the portal in Telugu, with a
-language toggle in the corner.
+`pnpm dev` compiles the shared calculation code before it starts the site, so
+the first run takes a few seconds longer than later ones. Wait for **Ready**,
+then open **http://localhost:3000**. The first page you click also compiles on
+demand — that one can take up to a minute; every visit after is instant.
+
+Leave that window open: it *is* the website. Closing it, or pressing `Ctrl+C`
+in it, switches the site off.
+
+You should see the portal in Telugu, with a language toggle in the corner.
 
 Try a calculator — DA arrears, say. It will work immediately, because
 calculators do their arithmetic in the browser and need no database.
