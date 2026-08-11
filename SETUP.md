@@ -362,10 +362,24 @@ added yet.
 
 > **The rates carry a warning, and it is not decoration.** Every pay and DA rate
 > was taken from public summaries, not from the GO PDFs themselves. Each one
-> shows an orange "not yet checked against the GO" notice. Before you tell
-> anyone about this site, check those figures against the real GOs and remove
-> the flags. A wrong DA percentage becomes a wrong rupee figure on somebody's
-> phone, and that is the one mistake this project cannot recover from.
+> shows an orange "not yet checked against the GO" notice. A wrong DA percentage
+> becomes a wrong rupee figure on somebody's phone, and that is the one mistake
+> this project cannot recover from.
+>
+> There is a command for it:
+>
+> ```
+> pnpm rates:verify
+> ```
+>
+> It takes them one at a time — shows the figure, gives you the link to the
+> actual GO where it has one, and asks whether the order agrees. Answer **y**
+> and that rate's warning comes off. Answer **n** and you can type what the GO
+> really says. Stop whenever you like; it saves after every answer, and picks up
+> where you left off.
+>
+> This is the one job nobody else can do for you, and it is what stands between
+> the portal and being trustworthy.
 
 ---
 

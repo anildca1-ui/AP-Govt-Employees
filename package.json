@@ -19,6 +19,7 @@
     "setup:local": "node scripts/setup-local.mjs",
     "test:setup-local": "./scripts/test-setup-local.sh",
     "rates:worksheet": "node scripts/rates-worksheet.mjs",
+    "rates:verify": "node scripts/rates-verify.mjs",
     "rates:generate": "node scripts/generate-rates-seed.mjs",
     "test": "node scripts/build-packages.mjs && vitest run",
     "test:watch": "vitest",
