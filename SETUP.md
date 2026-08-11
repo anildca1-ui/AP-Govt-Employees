@@ -234,9 +234,11 @@ on its own to see why:
 
 ```
 pnpm packages:build
-``` Wait for **Ready**,
-then open **http://localhost:3000**. The first page you click also compiles on
-demand — that one can take up to a minute; every visit after is instant.
+```
+
+Wait for **Ready**, then open **http://localhost:3000**. The first page you
+click also compiles on demand — that one can take up to a minute; every visit
+after is instant.
 
 Leave that window open: it *is* the website. Closing it, or pressing `Ctrl+C`
 in it, switches the site off.
