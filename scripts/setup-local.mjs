@@ -19,7 +19,7 @@ import { execSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { buildEnv } from "./lib/env-file.mjs";
+import { buildEnv, fillEnv, missingFrom, readEnv } from "./lib/env-file.mjs";
 import { parseSupabaseEnv, parseSupabaseStart } from "./lib/supabase-status.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -104,9 +104,42 @@ if (missing.length > 0) {
 }
 
 if (existsSync(envPath)) {
-  console.log("\n.env already exists — leaving it alone. Its values are:");
-  console.log(`  NEXT_PUBLIC_SUPABASE_URL=${keys.url}`);
-  console.log("  (run pnpm setup:env if you want to rewrite it)\n");
+  // Read the file, do not describe it from memory. This used to print the
+  // value it had just detected under the heading "Its values are", so a .env
+  // copied from the template — which is what `copy .env.example .env` leaves,
+  // with both keys blank — was reported as already configured.
+  const current = readFileSync(envPath, "utf8");
+  const example = readFileSync(examplePath, "utf8");
+  const wanted = {
+    NEXT_PUBLIC_SUPABASE_URL: keys.url,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: keys.anon,
+    SUPABASE_SERVICE_ROLE_KEY: keys.service,
+  };
+  const missing = missingFrom(current, example, wanted);
+
+  if (missing.length === 0) {
+    console.log("\n.env is already pointed at this database — nothing to change.\n");
+  } else {
+    // Only blanks and untouched template defaults are filled. A value the
+    // owner has set to something else is their cloud project, and replacing it
+    // with a local key would quietly point the site at the wrong database.
+    let updated = fillEnv(current, wanted, missing);
+    const token = readEnv(current).get("ADMIN_TOKEN");
+    let newToken = null;
+    if (token === undefined || token === "") {
+      newToken = randomBytes(24).toString("base64url");
+      updated = fillEnv(updated, { ADMIN_TOKEN: newToken }, ["ADMIN_TOKEN"]);
+    }
+    writeFileSync(envPath, updated);
+
+    console.log(`\n✓ Filled in .env — it was missing: ${missing.join(", ")}`);
+    console.log("  Everything else in the file was left as it was.");
+    if (newToken !== null) {
+      console.log(`\n  Admin password (for the /admin page): ${newToken}`);
+      console.log("  Save it somewhere safe.");
+    }
+    console.log("");
+  }
 } else {
   writeFileSync(
     envPath,

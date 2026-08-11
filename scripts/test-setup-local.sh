@@ -42,7 +42,7 @@ fail=0
 # run goes through this.
 run() {
   set +e
-  STUB_MODE="$1" node scripts/setup-local.mjs >"$2" 2>&1
+  STUB_MODE="$1" STUB_PORT="${STUB_PORT:-54321}" node scripts/setup-local.mjs >"$2" 2>&1
   RUN_CODE=$?
   set -e
 }
@@ -89,10 +89,46 @@ check "names Docker Desktop" \
   "$(grep -q 'Docker Desktop' /tmp/setup-local-3.log && echo yes || echo no)" "yes"
 check "writes no .env" "$([ -f .env ] && echo yes || echo no)" "no"
 
-printf '\n4. an existing .env is never clobbered\n'
-printf 'NEXT_PUBLIC_SUPABASE_URL=KEEP-ME\n' > .env
+printf '\n4. a .env copied from the template gets its blanks filled\n'
+# This is what `copy .env.example .env` leaves: the file exists, the URL still
+# holds the template default and both keys are empty. It used to be reported as
+# already configured, so the site stayed broken with no sign why.
+cp .env.example .env
 run modern /tmp/setup-local-4.log
-check "leaves it alone" "$(grep -c '^NEXT_PUBLIC_SUPABASE_URL=KEEP-ME$' .env || true)" "1"
+check "exits 0" "$RUN_CODE" "0"
+check "fills the publishable key" \
+  "$(grep -c '^NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_STUBSTUBSTUB$' .env || true)" "1"
+check "fills the secret key" \
+  "$(grep -c '^SUPABASE_SERVICE_ROLE_KEY=sb_secret_STUBSTUBSTUB$' .env || true)" "1"
+check "generates an admin token" "$(grep -cE '^ADMIN_TOKEN=.{20,}$' .env || true)" "1"
+check "keeps the rest of the template" \
+  "$(grep -c '^EMBEDDING_DIMENSIONS=1024$' .env || true)" "1"
+
+# The template's own URL default and the stack's URL are normally identical, so
+# a run at the default port cannot tell "still the template default" from
+# "already configured". A different port can.
+rm -f .env
+cp .env.example .env
+STUB_PORT=54399 run modern /tmp/setup-local-4b.log
+check "refreshes a URL still holding the template default" \
+  "$(grep -c '^NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54399$' .env || true)" "1"
+
+printf '\n5. a configured cloud .env is never overwritten\n'
+# Replacing a cloud key with a local one would point the site at the wrong
+# database, and nothing on screen would say so.
+{
+  echo 'NEXT_PUBLIC_SUPABASE_URL=https://real-project.supabase.co'
+  echo 'NEXT_PUBLIC_SUPABASE_ANON_KEY=cloud-anon-key'
+  echo 'SUPABASE_SERVICE_ROLE_KEY=cloud-service-key'
+  echo 'ADMIN_TOKEN=my-existing-admin-token'
+} > .env
+run modern /tmp/setup-local-5.log
+check "keeps the cloud url" \
+  "$(grep -c '^NEXT_PUBLIC_SUPABASE_URL=https://real-project.supabase.co$' .env || true)" "1"
+check "keeps the cloud key" "$(grep -c '^NEXT_PUBLIC_SUPABASE_ANON_KEY=cloud-anon-key$' .env || true)" "1"
+check "keeps the admin token" "$(grep -c '^ADMIN_TOKEN=my-existing-admin-token$' .env || true)" "1"
+check "says nothing needed changing" \
+  "$(grep -q 'nothing to change' /tmp/setup-local-5.log && echo yes || echo no)" "yes"
 
 printf '\n'
 if [ "$fail" -ne 0 ]; then

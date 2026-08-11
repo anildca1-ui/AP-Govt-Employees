@@ -41,3 +41,41 @@ export function warningsFor({ url, anon, service }) {
   }
   return warnings;
 }
+
+/** Reads a .env into a Map, ignoring comments and blank lines. */
+export function readEnv(contents) {
+  const values = new Map();
+  for (const line of String(contents).split("\n")) {
+    const match = /^\s*([A-Z][A-Z0-9_]*)\s*=\s*(.*?)\s*$/.exec(line);
+    if (match !== null) values.set(match[1], clean(match[2]));
+  }
+  return values;
+}
+
+/**
+ * Which of `values` an existing .env is still missing.
+ *
+ * "Missing" means empty or still holding the template's own default — copying
+ * .env.example to .env leaves NEXT_PUBLIC_SUPABASE_URL at 127.0.0.1:54321 and
+ * both keys blank, which is a file that exists and does not work.
+ *
+ * A value already set to something different is NOT missing: that is the
+ * owner's cloud project, and overwriting it with a local key would silently
+ * point their site at the wrong database.
+ */
+export function missingFrom(existingContents, exampleContents, values) {
+  const existing = readEnv(existingContents);
+  const defaults = readEnv(exampleContents);
+
+  return Object.keys(values).filter((name) => {
+    const current = existing.get(name);
+    if (current === undefined || current === "") return true;
+    return current === defaults.get(name) && current !== clean(values[name]);
+  });
+}
+
+/** Sets only the named keys, leaving every other line untouched. */
+export function fillEnv(existingContents, values, names) {
+  const wanted = Object.fromEntries(names.map((name) => [name, values[name]]));
+  return buildEnv(existingContents, wanted);
+}

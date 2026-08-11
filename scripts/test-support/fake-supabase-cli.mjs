@@ -16,6 +16,9 @@
 const args = process.argv.slice(2);
 const ESC = String.fromCharCode(27);
 const MODE = process.env.STUB_MODE || "modern";
+// Lets a test make the reported URL differ from .env.example's default, which
+// is the only way to tell "still the template default" from "already set".
+const PORT = process.env.STUB_PORT || "54321";
 
 if (args[0] === "start") {
   if (MODE === "nodocker") { console.error("failed to connect to docker daemon"); process.exit(1); }
@@ -27,7 +30,7 @@ if (args[0] === "status") {
   if (wantsEnv) {
     if (MODE === "old") { console.error("unknown flag: --output"); process.exit(1); }
     if (MODE === "nodocker") { console.error("not running"); process.exit(1); }
-    console.log('API_URL="http://127.0.0.1:54321"');
+    console.log(`API_URL="http://127.0.0.1:${PORT}"`);
     console.log('ANON_KEY="sb_publishable_STUBSTUBSTUB"');
     console.log('SERVICE_ROLE_KEY="sb_secret_STUBSTUBSTUB"');
     console.log('DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"');
@@ -37,7 +40,7 @@ if (args[0] === "status") {
   if (MODE === "nodocker") { console.error("not running"); process.exit(1); }
   // Coloured table, exactly the shape that defeated the earlier parser.
   console.log(`| ${ESC}[1mStudio${ESC}[0m | http://127.0.0.1:54323 |`);
-  console.log(`| ${ESC}[1mProject URL${ESC}[0m | http://127.0.0.1:54321 |`);
+  console.log(`| ${ESC}[1mProject URL${ESC}[0m | http://127.0.0.1:${PORT} |`);
   console.log(`| ${ESC}[1mPublishable${ESC}[0m | sb_publishable_STUBSTUBSTUB |`);
   console.log(`| ${ESC}[1mSecret${ESC}[0m | sb_secret_STUBSTUBSTUB |`);
   process.exit(0);
