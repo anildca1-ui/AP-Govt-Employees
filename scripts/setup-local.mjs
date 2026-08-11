@@ -19,7 +19,8 @@ import { execSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { buildEnv, parseSupabaseStart } from "./lib/env-file.mjs";
+import { buildEnv } from "./lib/env-file.mjs";
+import { parseSupabaseEnv, parseSupabaseStart } from "./lib/supabase-status.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const examplePath = fileURLToPath(new URL("../.env.example", import.meta.url));
@@ -39,7 +40,19 @@ try {
   started = false;
 }
 
-let output;
+// --output env first: plain KEY="value" lines, no colour, no table layout.
+// Parsing the pretty output failed twice on a real machine; the CLI is allowed
+// to restyle it and does. The table reader below is only for older CLIs.
+let keys = null;
+try {
+  keys = parseSupabaseEnv(
+    execSync("pnpm exec supabase status --output env", { cwd: root, encoding: "utf8" }),
+  );
+} catch {
+  keys = null;
+}
+
+let output = "";
 try {
   output = execSync("pnpm exec supabase status", { cwd: root, encoding: "utf8" });
   process.stdout.write(`\n${output}`);
@@ -53,14 +66,34 @@ try {
   process.exit(1);
 }
 
-const keys = parseSupabaseStart(output);
+if (keys === null || keys.url === null || keys.anon === null || keys.service === null) {
+  keys = parseSupabaseStart(output);
+}
 const missing = ["url", "anon", "service"].filter((name) => keys[name] === null);
 if (missing.length > 0) {
+  // Say what was actually seen. Twice now this failed with nothing to go on but
+  // "could not be read", which cost a round trip each time to find out what the
+  // CLI had really printed.
+  let sample = "";
+  try {
+    sample = execSync("pnpm exec supabase status --output env", {
+      cwd: root,
+      encoding: "utf8",
+    });
+  } catch {
+    // Older CLIs have no --output env; the message below still tells them what
+    // to run by hand.
+  }
+
   console.error(
-    `\nThe database started, but its keys could not be read from the output\n` +
-      `(missing: ${missing.join(", ")}).\n\n` +
-      `Nothing is broken — run this to see them, then use pnpm setup:env:\n` +
-      `  pnpm exec supabase status\n`,
+    `\nThe database is running, but its keys could not be read (missing: ` +
+      `${missing.join(", ")}).\n\n` +
+      `Nothing is broken and no data is lost. Two ways forward:\n\n` +
+      `  1. Run this, and paste what it prints:\n` +
+      `       pnpm exec supabase status --output env\n\n` +
+      `  2. Or set the values by hand from that output:\n` +
+      `       pnpm setup:env\n` +
+      (sample === "" ? "" : `\nWhat this script saw:\n${sample}\n`),
   );
   process.exit(1);
 }
