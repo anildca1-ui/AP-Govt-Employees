@@ -8,6 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "go": "node scripts/go.mjs",
     "build": "pnpm -r build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

@@ -4,7 +4,21 @@ This is written for someone who is not a programmer. Every step is either
 clicking around a website or copying a value into a file. Nothing here requires
 you to understand the code.
 
-At any point, run this to see where you are:
+## The only command you need
+
+```
+pnpm go
+```
+
+It fetches the latest work, installs anything new, builds the shared code, sets
+up the database connection if it is not set up yet, and starts the site. Run it
+whenever you want to see the newest version. Leave the window open while you
+browse; `Ctrl+C` stops the site.
+
+Everything below is the detail behind that one command — worth reading when
+something needs changing, not needed to get going.
+
+To see what is switched on and what is not:
 
 ```
 pnpm setup:check
