@@ -25,31 +25,32 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const examplePath = fileURLToPath(new URL("../.env.example", import.meta.url));
 const envPath = fileURLToPath(new URL("../.env", import.meta.url));
 
-console.log("Starting the local database (this takes a few minutes the first time)...\n");
+console.log("Starting the local database. The first run downloads several\n" +
+  "hundred MB and can take a few minutes — progress appears below.\n");
+
+// Inherited, not captured: this takes minutes, and a captured stream means a
+// silent terminal, which reads as a hung command. The keys are read from
+// `status` afterwards instead — same summary block, and it returns at once.
+let started = true;
+try {
+  execSync("pnpm exec supabase start", { cwd: root, stdio: "inherit" });
+} catch {
+  // Already-running is not a failure; `status` below tells us which it was.
+  started = false;
+}
 
 let output;
 try {
-  output = execSync("pnpm exec supabase start", {
-    cwd: root,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "inherit"],
-  });
-  process.stdout.write(output);
-} catch (error) {
-  // Already running is not a failure — ask it for the same summary instead.
-  try {
-    output = execSync("pnpm exec supabase status", { cwd: root, encoding: "utf8" });
-    process.stdout.write(output);
-  } catch {
-    console.error(
-      "\nCould not start the local database.\n\n" +
-        "The usual cause is Docker Desktop not running — this needs it, and it\n" +
-        "must be open before this command works. Start Docker Desktop, wait for\n" +
-        "it to say it is running, then try again.\n\n" +
-        `Original error: ${error instanceof Error ? error.message : String(error)}`,
-    );
-    process.exit(1);
-  }
+  output = execSync("pnpm exec supabase status", { cwd: root, encoding: "utf8" });
+  process.stdout.write(`\n${output}`);
+} catch {
+  console.error(
+    "\nCould not start the local database.\n\n" +
+      "The usual cause is Docker Desktop not being open. This needs it running:\n" +
+      "start Docker Desktop, wait until it says it is running, then try again.\n\n" +
+      (started ? "" : "The start command also reported a problem — its output is above.\n"),
+  );
+  process.exit(1);
 }
 
 const keys = parseSupabaseStart(output);
